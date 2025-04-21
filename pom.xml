@@ -6,7 +6,7 @@
 
     <groupId>dev.tbm00</groupId>
     <artifactId>ShopStalls64</artifactId>
-    <version>0.0.8-beta</version>
+    <version>0.0.0-beta</version>
     <packaging>jar</packaging>
 
     <name>ShopStalls64</name>
