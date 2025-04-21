@@ -1,0 +1,16 @@
+# ShopStalls64 v0.0.8-beta by @tbm00
+# https://github.com/tbm00/ShopStalls64
+
+enabled: true
+
+lang:
+  prefix: "&8[&fShop&8] &7"
+
+feature:
+  enabled: true
+  dsMaxStoredBalance: 20000000
+  dsMaxStoredStock: 8192
+  dsCreationItemPrice: 4000
+  guiDefaultCategory: "shopgui"
+  dsDescChange: true
+  dsEditorPrevention: true

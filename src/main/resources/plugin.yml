@@ -1,0 +1,41 @@
+name: ShopStalls64
+version: ${project.version}
+description: ${project.description}
+author: tbm00
+main: dev.tbm00.spigot.shopstalls64.ShopStalls64
+api-version: 1.17
+depend: [DisplayShops, Vault, Rep64]
+commands:
+  testshop:
+    description: Main command for ShopStalls64
+  testbuy:
+    description: Additional command for ShopStalls64
+  testsell:
+    description: Additional command for ShopStalls64
+  testsellinv:
+    description: Additional command for ShopStalls64
+    aliases: [testsellall]
+  testsellgui:
+    description: Additional command for ShopStalls64
+    aliases: [testsellg, testsg]
+  testshopadmin:
+    description: Admin commands for ShopStalls64
+permissions:
+  shopstalls64.player:
+    description: Ability to use player commands
+    default: true
+  shopstalls64.player.money-move:
+    description: Ability to store money into shops with command
+    default: true
+  shopstalls64.player.store-inv:
+    description: Ability to store inv items into shops with command
+    default: true
+  shopstalls64.player.sell-inv:
+    description: Ability to sell inv items with command
+    default: true
+  shopstalls64.player.sell-gui:
+    description: Ability to open sell GUI with command
+    default: true
+  shopstalls64.admin:
+    description: Ability to use admin commands
+    default: op
