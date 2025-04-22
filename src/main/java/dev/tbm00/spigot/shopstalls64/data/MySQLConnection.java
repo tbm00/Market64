@@ -71,6 +71,7 @@ public class MySQLConnection {
                 "storage_coords TEXT, " +
                 "initial_price DOUBLE, " +
                 "renewal_price DOUBLE, " +
+                "rental_time INT, " +
                 "rented BOOLEAN, " +
                 "renter_uuid VARCHAR(36), " +
                 "renter_name VARCHAR(20), " +

@@ -1,8 +1,11 @@
 package dev.tbm00.spigot.shopstalls64;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +55,6 @@ public class StallHandler {
      *  - Get the active contained shops using the claim's 3d corner blocks
      *  - Load all stalls to internal cache
      */
-    /** Load everything into memory. */
     public void reloadAll() {
         stalls.clear();
         List<Stall> stallsToLoad = dao.loadAll();
@@ -102,13 +104,15 @@ public class StallHandler {
      * 
      *  - Returns true on success, false when there was an error
      * @param stallId int
+     * @param rentalTime int
      * @param initialPrice double
      * @param renewalPrice double
      * @param world String
      * @param storageLoc String in form of "x,y,z"
      * @param claimUuid UUID
+     * @returns true on success, false if error
      */
-    public boolean createStall(int stallId, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
+    public boolean createStall(int stallId, int rentalTime, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
 
@@ -135,7 +139,7 @@ public class StallHandler {
         }
         
         Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, coords, initialPrice, renewalPrice,
-                            false, null, null, null, null);
+                                    rentalTime, false, null, null, null, null);
             
         if (!dao.insert(newStall)) return false;
         ensureCapacity(stallId);
@@ -144,15 +148,15 @@ public class StallHandler {
     }
 
     /**
-     * Process (in order): 
-     *  - Deletes internal Stall object (sets the object to null in ArrayList, so it stays in same order)
-     *  - Deletes Stall entry from SQL database (using updateStall())
-     * 
-     *  - Returns true on success, false when there was an error
      * @param stallId int
+     * @returns true on success, false if error
      */
     public boolean deleteStall(int stallId) {
-        return false;
+        if (!dao.delete(stallId)) return false;
+        if (stallId >= 0 && stallId < stalls.size()) {
+            stalls.set(stallId, null);
+        }
+        return true;
     }
 
     /**
@@ -171,10 +175,80 @@ public class StallHandler {
      *  - Updates internal Stall object & other attributes accordingly
      *  - Updates Stall entry in SQL database
      *  
+     * @returns true on success, false if error
+     */
+    public boolean rentStall(int stallId, Player player) {
+        Stall stall = getStall(stallId);
+
+        if (stall == null) {
+            StaticUtil.sendMessage(player, "&cCould not find stall!");
+            return false;
+        } else if (stall.isRented()) {
+            StaticUtil.sendMessage(player, "&cStall is currently rented!");
+            return false;
+        } 
+        
+        double price = stall.getInitialPrice();
+        
+        if (!ecoHook.hasMoney(player, price)) {
+            StaticUtil.sendMessage(player, "&cYou don't have enough money!");
+            return false;
+        } else if (!ecoHook.removeMoney(player, price)) {
+            StaticUtil.sendMessage(player, "&cError when charging you!");
+            return false;
+        }
+
+        Date dateBase = new Date();
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
+        stall.setEvictionDate(Date.from(newExpiry));
+
+        return dao.update(stall);
+    }
+
+    /**
+     * Process (in order): 
+     *  - Charges the player the renewal price
+     * 
+     *  - Increases stalls' eviction date by 7 days
+     * 
+     *  - Updates internal Stall object & other attributes accordingly
+     *  - Updates Stall entry in SQL database
+     *  
      *  - Returns true on success, false when there was an error
      */
-    public boolean rentStall(int stallId, OfflinePlayer player) {
-        return false;
+    public boolean renewStall(int stallId, Player player) {
+        Stall stall = getStall(stallId);
+
+        if (stall == null) {
+            StaticUtil.sendMessage(player, "&cCould not find stall!");
+            return false;
+        } else if (!stall.isRented()) {
+            StaticUtil.sendMessage(player, "&cThis stall is not currently rented!");
+            return false;
+        } else if (!player.getUniqueId().equals(stall.getRenterUuid())) {
+            StaticUtil.sendMessage(player, "&cThis stall is not yours!");
+            return false;
+        } 
+        
+        double price = stall.getRenewalPrice();
+
+        if (!ecoHook.hasMoney(player, price)) {
+            StaticUtil.sendMessage(player, "&cYou don't have enough money!");
+            return false;
+        } else if (!ecoHook.removeMoney(player, price)) {
+            StaticUtil.sendMessage(player, "&cError when charging you!");
+            return false;
+        }
+
+        Date dateBase = stall.getEvictionDate() != null ? 
+                        stall.getEvictionDate() : new Date();
+
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
+        stall.setEvictionDate(Date.from(newExpiry));
+
+        StaticUtil.sendMessage(player, "&aRenewed your stall; ");
+
+        return dao.update(stall);
     }
 
     /**
@@ -189,7 +263,22 @@ public class StallHandler {
      *  - Returns true on success, false when there was an error
      */
     public boolean renewStall(int stallId, OfflinePlayer player) {
-        return false;
+        Stall stall = getStall(stallId);
+
+        if (stall == null || !stall.isRented() || !player.getUniqueId().equals(stall.getRenterUuid())) return false;
+        
+        double price = stall.getRenewalPrice();
+        
+        if (!ecoHook.hasMoney(player, price)) return false;
+        if (!ecoHook.removeMoney(player, price)) return false;
+
+        Date dateBase = stall.getEvictionDate() != null ? 
+                        stall.getEvictionDate() : new Date();
+
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
+        stall.setEvictionDate(Date.from(newExpiry));
+
+        return dao.update(stall);
     }
 
     /**

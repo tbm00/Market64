@@ -69,7 +69,7 @@ public class AdminCmd implements TabExecutor {
      */
     private boolean handleHelpCmd(Player player) {
         player.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall Admin Commands" + ChatColor.DARK_PURPLE + " ---\n"
-            + ChatColor.WHITE + "/teststalladmin create <id> <x,y,z> <initialPrice> <renewalPrice> <claimUUID>" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/teststalladmin create <id> <rentalTime> <initialPrice> <renewalPrice> <world> <x,y,z> <claimUUID>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/teststalladmin delete <id>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/teststalladmin status <id>/all" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/teststalladmin evict <id>" + ChatColor.GRAY + " \n"

@@ -35,12 +35,13 @@ public class StallDAO {
             storage_coords,
             initial_price,
             renewal_price,
+            rental_time,
             rented,
             renter_uuid,
             renter_name,
             eviction_date,
             last_transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE_SQL = """
@@ -51,6 +52,7 @@ public class StallDAO {
             storage_coords = ?,
             initial_price = ?,
             renewal_price = ?,
+            rental_time = ?,
             rented = ?,
             renter_uuid = ?,
             renter_name = ?,
@@ -136,6 +138,7 @@ public class StallDAO {
         int[] coords = parseCoords(rs.getString("storage_coords"));
         double initialPrice = rs.getDouble("initial_price");
         double renewalPrice  = rs.getDouble("renewal_price");
+        int rentalTime  = rs.getInt("rental_time");
         boolean rented = rs.getBoolean("rented");
         String ru = rs.getString("renter_uuid");
         UUID renterUuid = ru != null ? UUID.fromString(ru) : null;
@@ -144,7 +147,7 @@ public class StallDAO {
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
         return new Stall(id, claimUuid, null, null, null, world, coords, initialPrice, renewalPrice,
-                         rented, renterUuid, renterName, eviction, lastTransaction);
+                        rentalTime, rented, renterUuid, renterName, eviction, lastTransaction);
     }
 
     private void prepareStatement(PreparedStatement ps, Stall s) throws SQLException {
@@ -154,11 +157,12 @@ public class StallDAO {
         ps.setString(4, joinCoords(s.getStorageCoords()));
         ps.setDouble(5, s.getInitialPrice());
         ps.setDouble(6, s.getRenewalPrice());
-        ps.setBoolean(7, s.isRented());
-        ps.setString(8, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
-        ps.setString(9, s.getRenterName());
-        ps.setTimestamp(10, toSqlTimestamp(s.getEvictionDate()));
-        ps.setTimestamp(11, toSqlTimestamp(s.getLastTransaction()));
+        ps.setDouble(7, s.getRentalTime());
+        ps.setBoolean(8, s.isRented());
+        ps.setString(9, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
+        ps.setString(10, s.getRenterName());
+        ps.setTimestamp(11, toSqlTimestamp(s.getEvictionDate()));
+        ps.setTimestamp(12, toSqlTimestamp(s.getLastTransaction()));
     }
 
     private int[] parseCoords(String data) {

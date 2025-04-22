@@ -1,6 +1,6 @@
 package dev.tbm00.spigot.shopstalls64.hook;
 
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import net.milkbowl.vault.economy.Economy;
@@ -17,13 +17,13 @@ public class EcoHook {
         pl = rsp.getProvider();
     }
 
-    public boolean hasMoney(Player player, double amount) {
+    public boolean hasMoney(OfflinePlayer player, double amount) {
         double bal = pl.getBalance(player);
         if (bal>=amount) return true;
         else return false;
     }
 
-    public boolean removeMoney(Player player, double amount) {
+    public boolean removeMoney(OfflinePlayer player, double amount) {
         if (amount <= 0) return true;
 
         EconomyResponse r = pl.withdrawPlayer(player, amount);
@@ -31,7 +31,7 @@ public class EcoHook {
         else return false;
     }
 
-    public boolean giveMoney(Player player, double amount) {
+    public boolean giveMoney(OfflinePlayer player, double amount) {
         if (amount <= 0) return true;
 
         EconomyResponse r = pl.depositPlayer(player, amount);

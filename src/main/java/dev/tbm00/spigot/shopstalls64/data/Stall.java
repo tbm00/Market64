@@ -22,6 +22,7 @@ public class Stall {
     private int[] storageCoords; // x,y,z
     private Double initialPrice;
     private Double renewalPrice;
+    private int rentalTime; 
     private boolean rented;
     private UUID renterUuid;
     private String renterName;
@@ -39,6 +40,7 @@ public class Stall {
      * @param storageCoords coordinates (x, y, z) for expired goods storage
      * @param initialPrice initial rental price
      * @param renewalPrice renewal rental price
+     * @param rentalTime time in days the lease lasts
      * @param rented whether the stall is currently rented
      * @param renterUuid UUID of the renter
      * @param renterName name of the renter
@@ -54,6 +56,7 @@ public class Stall {
                  int[] storageCoords,
                  Double initialPrice,
                  Double renewalPrice,
+                 int rentalTime,
                  boolean rented,
                  UUID renterUuid,
                  String renterName,
@@ -68,6 +71,7 @@ public class Stall {
         this.storageCoords = storageCoords;
         this.initialPrice = initialPrice;
         this.renewalPrice = renewalPrice;
+        this.rentalTime = rentalTime;
         this.rented = rented;
         this.renterUuid = renterUuid;
         this.renterName = renterName;
@@ -164,6 +168,15 @@ public class Stall {
         this.renewalPrice = renewalPrice;
     }
 
+    /** @return the time in days the lease lasts */
+    public int getRentalTime() {
+        return rentalTime;
+    }
+    /** @param rentalTime the time in days to set */
+    public void setRentalTime(int rentalTime) {
+        this.rentalTime = rentalTime;
+    }
+    
     /** @return whether the stall is rented */
     public boolean isRented() {
         return rented;
