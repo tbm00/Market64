@@ -3,24 +3,17 @@
 package dev.tbm00.spigot.shopstalls64.command;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import xzot1k.plugins.ds.api.objects.Shop;
-import xzot1k.plugins.ds.api.objects.LocationClone;
-
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
-import dev.tbm00.spigot.shopstalls64.StallHandler;
 import dev.tbm00.spigot.shopstalls64.StaticUtils;
+import dev.tbm00.spigot.shopstalls64.StallHandler;
+import dev.tbm00.spigot.shopstalls64.data.Stall;
 
 public class AdminCmd implements TabExecutor {
     private final StallHandler stallHandler;

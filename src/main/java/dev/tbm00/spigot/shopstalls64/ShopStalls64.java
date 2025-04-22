@@ -7,7 +7,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.tbm00.spigot.rep64.Rep64;
-
+import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
 import dev.tbm00.spigot.shopstalls64.hook.*;
 import dev.tbm00.spigot.shopstalls64.command.*;

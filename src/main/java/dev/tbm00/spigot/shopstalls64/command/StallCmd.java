@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -22,10 +21,9 @@ import org.bukkit.inventory.ItemStack;
 import xzot1k.plugins.ds.api.objects.Shop;
 
 import dev.tbm00.spigot.shopstalls64.ShopStalls64;
-import dev.tbm00.spigot.shopstalls64.StallHandler;
 import dev.tbm00.spigot.shopstalls64.StaticUtils;
+import dev.tbm00.spigot.shopstalls64.StallHandler;
 import dev.tbm00.spigot.shopstalls64.data.Stall;
-import dev.tbm00.spigot.shopstalls64.ConfigHandler;
 
 public class StallCmd implements TabExecutor {
     private final StallHandler stallHandler;
@@ -106,10 +104,8 @@ public class StallCmd implements TabExecutor {
             if (args[0].equals("rent") || args[0].equals("abandon") || args[0].equals("renew")) {
                 for (Stall stall : stallHandler.getStalls()) {
                     if (sender instanceof Player && sender.getName().equalsIgnoreCase(stall.getRenterName()))
-                        list.add(Integer.valueOf(stall.getId()));
+                        list.add(String.valueOf(stall.getId()));
                 }
-                list.add("<#>");
-                list.add("max");
             }
         }
         return list;

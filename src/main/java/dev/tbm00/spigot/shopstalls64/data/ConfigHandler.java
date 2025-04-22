@@ -1,6 +1,8 @@
-package dev.tbm00.spigot.shopstalls64;
+package dev.tbm00.spigot.shopstalls64.data;
 
 import org.bukkit.configuration.ConfigurationSection;
+
+import dev.tbm00.spigot.shopstalls64.ShopStalls64;
 
 public class ConfigHandler {
     private final ShopStalls64 javaPlugin;

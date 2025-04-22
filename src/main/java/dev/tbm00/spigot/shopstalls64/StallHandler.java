@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
 import dev.tbm00.spigot.shopstalls64.hook.DSHook;
 import dev.tbm00.spigot.shopstalls64.hook.EcoHook;

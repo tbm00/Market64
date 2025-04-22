@@ -23,6 +23,8 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
 
+import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
+
 public class StaticUtils {
     private static ShopStalls64 javaPlugin;
     private static ConfigHandler configHandler;
