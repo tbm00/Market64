@@ -10,14 +10,14 @@ public class Stall {
     private UUID claimUuid; // use ShopStalls64.gdHook.getClaimByUuid(World, UUID)
     private UUID[] shopUuids; // use ShopStalls64.dsHook.getManager().getShopById(UUID)
     private World world;
-    private int[] expiredGoodsStorageLocaiton; // x,y,z
+    private int[] storageCoords; // x,y,z
     private Double intialPrice;
     private Double renewalPrice;
     private boolean rented;
     private UUID renterUuid;
     private String renterName;
     private Date evictionDate;
-    private Date lastShopTranscationDate;
+    private Date lastTranscation;
 
     /**
      * Constructs a Stall with all properties initialized.
@@ -26,39 +26,39 @@ public class Stall {
      * @param claimUuid UUID of the land claim
      * @param shopUuids UUIDs of shops in the stall
      * @param world world where the stall resides
-     * @param expiredGoodsStorageLocaiton coordinates (x, y, z) for expired goods storage
+     * @param storageCoords coordinates (x, y, z) for expired goods storage
      * @param intialPrice initial rental price
      * @param renewalPrice renewal rental price
      * @param rented whether the stall is currently rented
      * @param renterUuid UUID of the renter
      * @param renterName name of the renter
      * @param evictionDate date when the renter will be evicted if not renewed
-     * @param lastShopTranscationDate date of the last shop transaction
+     * @param lastTranscation date of the last shop transaction
      */
     public Stall(int id,
                  UUID claimUuid,
                  UUID[] shopUuids,
                  World world,
-                 int[] expiredGoodsStorageLocaiton,
+                 int[] storageCoords,
                  Double intialPrice,
                  Double renewalPrice,
                  boolean rented,
                  UUID renterUuid,
                  String renterName,
                  Date evictionDate,
-                 Date lastShopTranscationDate) {
+                 Date lastTranscation) {
         this.id = id;
         this.claimUuid = claimUuid;
         this.shopUuids = shopUuids;
         this.world = world;
-        this.expiredGoodsStorageLocaiton = expiredGoodsStorageLocaiton;
+        this.storageCoords = storageCoords;
         this.intialPrice = intialPrice;
         this.renewalPrice = renewalPrice;
         this.rented = rented;
         this.renterUuid = renterUuid;
         this.renterName = renterName;
         this.evictionDate = evictionDate;
-        this.lastShopTranscationDate = lastShopTranscationDate;
+        this.lastTranscation = lastTranscation;
     }
 
     /** @return the stall's id */
@@ -98,12 +98,12 @@ public class Stall {
     }
 
     /** @return the expired goods storage location */
-    public int[] getExpiredGoodsStorageLocaiton() {
-        return expiredGoodsStorageLocaiton;
+    public int[] getStorageCoords() {
+        return storageCoords;
     }
-    /** @param expiredGoodsStorageLocaiton the storage location to set */
-    public void setExpiredGoodsStorageLocaiton(int[] expiredGoodsStorageLocaiton) {
-        this.expiredGoodsStorageLocaiton = expiredGoodsStorageLocaiton;
+    /** @param storageCoords the storage location to set */
+    public void setStorageCoords(int[] storageCoords) {
+        this.storageCoords = storageCoords;
     }
 
     /** @return the initial price */
@@ -161,11 +161,11 @@ public class Stall {
     }
 
     /** @return the last shop transaction date */
-    public Date getLastShopTranscationDate() {
-        return lastShopTranscationDate;
+    public Date getLastTranscation() {
+        return lastTranscation;
     }
-    /** @param lastShopTranscationDate the last transaction date to set */
-    public void setLastShopTranscationDate(Date lastShopTranscationDate) {
-        this.lastShopTranscationDate = lastShopTranscationDate;
+    /** @param lastTranscation the last transaction date to set */
+    public void setLastTranscation(Date lastTranscation) {
+        this.lastTranscation = lastTranscation;
     }
 }

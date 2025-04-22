@@ -156,9 +156,9 @@ public class StallHandler {
      *  - Adds lore to SHULKER itemstack: "Renter: <renter's name>"
      *  - Adds lore to SHULKER itemstack: "Date: <eviction date (i.e. current date)>" 
      *  - Moves stored stock from stall's shops into shulker(s), temporarily stores total created as int totalCleared
-     *  - Stores the SHULKER into the barrel at the Stall's expiredGoodsStorageLocaiton (if it doesnt exist, create it, if its full create new barrel 1 block below)
+     *  - Stores the SHULKER into the barrel at the Stall's storageCoords (if it doesnt exist, create it, if its full create new barrel 1 block below)
      *  - Adds lore to PAPER itemstack: "Shulkers: <totalCleared>"
-     *  - Stores the PAPER into the barrel at the Stall's expiredGoodsStorageLocaiton (if it doesnt exist, create it, if its full create new barrel 1 block below)
+     *  - Stores the PAPER into the barrel at the Stall's storageCoords (if it doesnt exist, create it, if its full create new barrel 1 block below)
      *  - Confirms each shop's balance and stock was successfully cleared from the Shop object
      * 
      *  - Resets each shop's data:
@@ -226,5 +226,18 @@ public class StallHandler {
      */
     private int dailyTask() {
         return 0;
+    }
+
+    /**
+     * Process (in order): 
+     *  - Updates the stall's last transcation date
+     * 
+     *  - Updates internal Stall object
+     *  - Updates Stall entry in SQL database
+     *  
+     *  - Returns true on success, false when there was an error
+     */
+    private boolean updateLatestTranscation(int stallId) {
+        return false;
     }
 }
