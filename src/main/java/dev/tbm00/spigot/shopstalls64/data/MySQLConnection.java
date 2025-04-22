@@ -65,7 +65,7 @@ public class MySQLConnection {
 
     private void initializeDatabase() {
         String playerTable = "CREATE TABLE IF NOT EXISTS shopstalls64_shop (" +
-                "id INT PRIMARY KEY AUTO_INCREMENT, " +
+                "id INT PRIMARY KEY, " +
                 "claim_uuid VARCHAR(36) , " +
                 "world TEXT, " +
                 "storage_coords TEXT, " +
@@ -74,8 +74,8 @@ public class MySQLConnection {
                 "rented BOOLEAN, " +
                 "renter_uuid VARCHAR(36), " +
                 "renter_name VARCHAR(20), " +
-                "eviction_date DATE, " +
-                "last_transaction_date DATE)";
+                "eviction_date TIMESTAMP, " +
+                "last_transaction_date TIMESTAMP)";
 
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {

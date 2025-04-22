@@ -40,7 +40,7 @@ public class StallDAO {
             renter_name,
             eviction_date,
             last_transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE_SQL = """
@@ -140,8 +140,8 @@ public class StallDAO {
         String ru = rs.getString("renter_uuid");
         UUID renterUuid = ru != null ? UUID.fromString(ru) : null;
         String renterName = rs.getString("renter_name");
-        java.util.Date eviction = toUtilDate(rs.getDate("eviction_date"));
-        java.util.Date lastTransaction  = toUtilDate(rs.getDate("last_transaction_date"));
+        java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
+        java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
         return new Stall(id, claimUuid, null, null, null, world, coords, initialPrice, renewalPrice,
                          rented, renterUuid, renterName, eviction, lastTransaction);
@@ -157,8 +157,8 @@ public class StallDAO {
         ps.setBoolean(7, s.isRented());
         ps.setString(8, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
         ps.setString(9, s.getRenterName());
-        ps.setDate(10, toSqlDate(s.getEvictionDate()));
-        ps.setDate(11, toSqlDate(s.getLastTranscation()));
+        ps.setTimestamp(10, toSqlTimestamp(s.getEvictionDate()));
+        ps.setTimestamp(11, toSqlTimestamp(s.getLastTranscation()));
     }
 
     private int[] parseCoords(String data) {
@@ -175,11 +175,11 @@ public class StallDAO {
                      .collect(Collectors.joining(","));
     }
 
-    private java.sql.Date toSqlDate(java.util.Date d) {
-        return d != null ? new java.sql.Date(d.getTime()) : null;
+    private java.sql.Timestamp toSqlTimestamp(java.util.Date d) {
+        return d != null ? new java.sql.Timestamp(d.getTime()) : null;
     }
 
-    private java.util.Date toUtilDate(java.sql.Date d) {
+    private java.util.Date toUtilDate(java.sql.Timestamp d) {
         return d != null ? new java.util.Date(d.getTime()) : null;
     }
 }

@@ -86,7 +86,7 @@ public class AdminCmd implements TabExecutor {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
             list.clear();
-            String[] subCmds = new String[]{"create","delete","status","evict"};
+            String[] subCmds = new String[]{"create","delete","status","evict","dailyTask"};
             for (String n : subCmds) {
                 if (n!=null && n.startsWith(args[0])) 
                     list.add(n);
