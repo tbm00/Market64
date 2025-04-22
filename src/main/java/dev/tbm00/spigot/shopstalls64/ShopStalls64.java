@@ -49,7 +49,7 @@ public class ShopStalls64 extends JavaPlugin {
 
             setupHooks();
             if (configHandler.isFeatureEnabled()) {
-                stallHandler = new StallHandler(configHandler, mysqlConnection, dsHook, gdHook, ecoHook);
+                stallHandler = new StallHandler(mysqlConnection, dsHook, gdHook, ecoHook);
 
                 // Register Listener
                 getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);

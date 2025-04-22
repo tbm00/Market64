@@ -28,7 +28,6 @@ import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 public class StaticUtils {
     private static ShopStalls64 javaPlugin;
     private static ConfigHandler configHandler;
-    public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();
 
     public static void init(ShopStalls64 javaPlugin, ConfigHandler configHandler) {
         StaticUtils.javaPlugin = javaPlugin;
@@ -153,44 +152,6 @@ public class StaticUtils {
         
         shulker.setItemMeta(meta);
         return shulker;
-    }
-
-    /**
-     * Teleports a player to the given world and coordinates after a 5-second delay.
-     * If the player moves during the delay, the teleport is cancelled.
-     *
-     * @param player the player to teleport
-     * @param worldName the target world's name
-     * @param x target x-coordinate
-     * @param y target y-coordinate
-     * @param z target z-coordinate
-     * @return true if the teleport countdown was started, false if the player was already waiting
-     */
-    public static boolean teleportPlayer(Player player, String worldName, double x, double y, double z) {
-        String playerName = player.getName();
-        if (pendingTeleports.contains(playerName)) {
-            StaticUtils.sendMessage(player, "&cYou are already waiting for a teleport!");
-            return false;
-        }
-        pendingTeleports.add(playerName);
-        StaticUtils.sendMessage(player, "&aTeleporting in 3 seconds -- don't move!");
-
-        // Schedule the teleport to run later
-        Bukkit.getScheduler().runTaskLater(javaPlugin, () -> {
-            if (pendingTeleports.contains(playerName)) {
-                // Remove player from pending list and teleport
-                pendingTeleports.remove(playerName);
-                World targetWorld = Bukkit.getWorld(worldName);
-                if (targetWorld != null) {
-                    Location targetLocation = new Location(targetWorld, x, y, z);
-                    player.teleport(targetLocation);
-                } else {
-                    StaticUtils.sendMessage(player, "&cWorld not found!");
-                }
-            }
-        }, 60L);
-
-        return true;
     }
 
     /**

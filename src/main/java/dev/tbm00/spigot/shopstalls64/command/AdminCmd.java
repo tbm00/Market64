@@ -3,6 +3,8 @@
 package dev.tbm00.spigot.shopstalls64.command;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
@@ -14,6 +16,7 @@ import org.bukkit.entity.Player;
 import dev.tbm00.spigot.shopstalls64.StaticUtils;
 import dev.tbm00.spigot.shopstalls64.StallHandler;
 import dev.tbm00.spigot.shopstalls64.data.Stall;
+import xzot1k.plugins.ds.api.objects.Shop;
 
 public class AdminCmd implements TabExecutor {
     private final StallHandler stallHandler;
@@ -86,4 +89,28 @@ public class AdminCmd implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         return new ArrayList<>();
     }
+
+    // THE FOLLOWING METHODS ARE LEFTOVERS FROM DISPLAYSHOPADDON64
+
+    /**
+     * Transfers display shops from source player to target player.
+     * 
+     * @return true once transfer completes
+     */
+    /*private boolean tShops() {
+        ConcurrentHashMap<String, Shop> dsMap = Data64.dsHook.getManager().getShopMap();
+
+        UUID uuidA = playerA.getUniqueId(), uuidB = playerB.getUniqueId();
+
+        int i = 0;
+        for (Shop shop : dsMap.values()) {
+            if (shop.getOwnerUniqueId()!=null && shop.getOwnerUniqueId().equals(uuidA)) {
+                shop.setOwnerUniqueId(uuidB);
+                ++i;
+            }
+        }
+
+        javaPlugin.sendMessage(sender, ChatColor.YELLOW + "tShops: " + i);
+        return true;
+    }*/
 }

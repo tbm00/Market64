@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
 import dev.tbm00.spigot.shopstalls64.data.Stall;
 import dev.tbm00.spigot.shopstalls64.hook.DSHook;
@@ -14,7 +13,6 @@ import dev.tbm00.spigot.shopstalls64.hook.EcoHook;
 import dev.tbm00.spigot.shopstalls64.hook.GDHook;
 
 public class StallHandler {
-    private final ConfigHandler configHandler;
     private final MySQLConnection mysqlConnection;
     public final DSHook dsHook;
     public final GDHook gdHook;
@@ -23,8 +21,7 @@ public class StallHandler {
     // stored sorted in order of stalls' ids
     public ArrayList<Stall> stalls = new ArrayList<Stall>();
 
-    public StallHandler(ConfigHandler configHandler, MySQLConnection mysqlConnection, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
-        this.configHandler = configHandler;
+    public StallHandler(MySQLConnection mysqlConnection, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
         this.mysqlConnection = mysqlConnection;
         this.dsHook = dsHook;
         this.gdHook = gdHook;
