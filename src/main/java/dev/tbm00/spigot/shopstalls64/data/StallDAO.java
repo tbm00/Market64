@@ -158,7 +158,7 @@ public class StallDAO {
         ps.setString(8, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
         ps.setString(9, s.getRenterName());
         ps.setTimestamp(10, toSqlTimestamp(s.getEvictionDate()));
-        ps.setTimestamp(11, toSqlTimestamp(s.getLastTranscation()));
+        ps.setTimestamp(11, toSqlTimestamp(s.getLastTransaction()));
     }
 
     private int[] parseCoords(String data) {

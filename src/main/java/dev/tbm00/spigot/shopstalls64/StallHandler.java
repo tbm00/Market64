@@ -174,7 +174,6 @@ public class StallHandler {
      *  - Returns true on success, false when there was an error
      */
     public boolean rentStall(int stallId, OfflinePlayer player) {
-        player.getUniqueId();
         return false;
     }
 
@@ -190,7 +189,6 @@ public class StallHandler {
      *  - Returns true on success, false when there was an error
      */
     public boolean renewStall(int stallId, OfflinePlayer player) {
-        player.getUniqueId();
         return false;
     }
 
@@ -274,8 +272,8 @@ public class StallHandler {
      *     - If the renewal date has passed, remove the renewal price from OfflinePlayer's vault balance
      *        - If that fails (ie they don't have enough money), evict the stall
      *     - If the renewal date hasn't passed, check if the stall has had a transaction in the last week (using last transaction date)
-     *        - If it has been a week since the transcation date, evict the stall
-     *        - If it hasn'tbeen a week since the transcation date, check if the player has more than 3 weeks of playtime
+     *        - If it has been a week since the transaction date, evict the stall
+     *        - If it hasn'tbeen a week since the transaction date, check if the player has more than 3 weeks of playtime
      *           - If renter has more than 3 weeks of playtime, evict the stall
      * Then returns the amount of shops that were evicted
      */

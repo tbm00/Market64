@@ -14,10 +14,10 @@ import xzot1k.plugins.ds.api.objects.Shop;
 
 public class Stall {
     private int id;
-    private UUID claimUuid; // use ShopStalls64.gdHook.getClaimByUuid(World, UUID)
-    private Claim claim;  // not stored in mysql
-    private Set<UUID> shopUuids; // not stored in mysql
-    private ConcurrentHashMap<String, Shop> shops; // not stored in mysql
+    private UUID claimUuid;
+    private Claim claim;                                                       // not stored in mysql
+    private Set<UUID> shopUuids = new HashSet<>();                             // not stored in mysql
+    private ConcurrentHashMap<String, Shop> shops = new ConcurrentHashMap<>(); // not stored in mysql
     private World world;
     private int[] storageCoords; // x,y,z
     private Double initialPrice;
@@ -26,7 +26,7 @@ public class Stall {
     private UUID renterUuid;
     private String renterName;
     private Date evictionDate;
-    private Date lastTranscation;
+    private Date lastTransaction;
 
     /**
      * Constructs a Stall with all properties initialized.
@@ -43,7 +43,7 @@ public class Stall {
      * @param renterUuid UUID of the renter
      * @param renterName name of the renter
      * @param evictionDate date when the renter will be evicted if not renewed
-     * @param lastTranscation date of the last shop transaction
+     * @param lastTransaction date of the last shop transaction
      */
     public Stall(int id,
                  UUID claimUuid,
@@ -58,7 +58,7 @@ public class Stall {
                  UUID renterUuid,
                  String renterName,
                  Date evictionDate,
-                 Date lastTranscation) {
+                 Date lastTransaction) {
         this.id = id;
         this.claimUuid = claimUuid;
         this.claim = claim;
@@ -72,7 +72,7 @@ public class Stall {
         this.renterUuid = renterUuid;
         this.renterName = renterName;
         this.evictionDate = evictionDate;
-        this.lastTranscation = lastTranscation;
+        this.lastTransaction = lastTransaction;
     }
 
     /** @return the stall's id */
@@ -201,11 +201,11 @@ public class Stall {
     }
 
     /** @return the last shop transaction date */
-    public Date getLastTranscation() {
-        return lastTranscation;
+    public Date getLastTransaction() {
+        return lastTransaction;
     }
-    /** @param lastTranscation the last transaction date to set */
-    public void setLastTranscation(Date lastTranscation) {
-        this.lastTranscation = lastTranscation;
+    /** @param lastTransaction the last transaction date to set */
+    public void setLastTransaction(Date lastTransaction) {
+        this.lastTransaction = lastTransaction;
     }
 }

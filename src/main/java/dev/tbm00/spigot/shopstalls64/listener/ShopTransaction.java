@@ -20,7 +20,7 @@ public class ShopTransaction implements Listener {
 
     /**
      * Process (in order): 
-     *  - Updates the stall's last transcation date
+     *  - Updates the stall's last transaction date
      * 
      *  - Updates internal Stall object
      *  - Updates Stall entry in SQL database
@@ -28,7 +28,7 @@ public class ShopTransaction implements Listener {
      *  - Returns true on success, false when there was an error
      */
     /**
-     * Updates the stall's last transcation date if its active.
+     * Updates the stall's last transaction date if its active.
      *
      * @param event the ShopTransactionEvent
      */
@@ -37,7 +37,7 @@ public class ShopTransaction implements Listener {
         UUID shopId = event.getShop().getShopId();
         for (Stall stall : stallHandler.getStalls()) {
             if ((stall != null && stall.isRented()) && stall.getShopUuids().contains(shopId)) {
-                stall.setLastTranscation(new Date());
+                stall.setLastTransaction(new Date());
                 stallHandler.getStallDao().update(stall);
             }
         }
