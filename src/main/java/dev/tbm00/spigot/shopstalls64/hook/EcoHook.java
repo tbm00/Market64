@@ -24,7 +24,7 @@ public class EcoHook {
     }
 
     public boolean removeMoney(Player player, double amount) {
-        if (pl==null && amount <= 0) return true;
+        if (amount <= 0) return true;
 
         EconomyResponse r = pl.withdrawPlayer(player, amount);
         if (r.transactionSuccess()) return true;
@@ -32,7 +32,7 @@ public class EcoHook {
     }
 
     public boolean giveMoney(Player player, double amount) {
-        if (pl==null || amount <= 0) return true;
+        if (amount <= 0) return true;
 
         EconomyResponse r = pl.depositPlayer(player, amount);
         if (r.transactionSuccess()) return true;

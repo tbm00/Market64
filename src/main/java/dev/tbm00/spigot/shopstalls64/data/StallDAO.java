@@ -31,7 +31,6 @@ public class StallDAO {
         INSERT INTO shopstalls64_shop (
             id,
             claim_uuid,
-            shop_uuids,
             world,
             storage_coords,
             initial_price,
@@ -48,7 +47,6 @@ public class StallDAO {
         UPDATE shopstalls64_shop
         SET
             claim_uuid = ?,
-            shop_uuids = ?,
             world = ?,
             storage_coords = ?,
             initial_price = ?,
