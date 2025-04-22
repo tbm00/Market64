@@ -12,6 +12,8 @@ import org.bukkit.World;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Statistic;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.HumanEntity;
@@ -203,30 +205,23 @@ public class StaticUtils {
     }
 
     /**
-     * Attempts to remove a specified amount of money from the player's account.
+     * Gets OfflinePlayer's cumulative playtime in seconds.
      *
-     * @param player the player from whose account the money will be withdrawn
-     * @param amount the amount of money to remove from the account
-     * @return true if the withdrawal transaction was successful, false otherwise
+     * @return int representing the player playtime in seconds
      */
-    public static boolean removeMoney(Player player, double amount) {
-        EconomyResponse r = ShopStalls64.ecoHook.pl.withdrawPlayer(player, amount);
-        if (r.transactionSuccess()) {
-            return true;
-        } else return false;
-    }
-
-    /**
-     * Attempts to add a specified amount of money to the player's account.
-     *
-     * @param player the player whose account will receive the deposit
-     * @param amount the amount of money to add to the account
-     * @return true if the deposit transaction was successful, false otherwise
-     */
-    public static boolean addMoney(Player player, double amount) {
-        EconomyResponse r = ShopStalls64.ecoHook.pl.depositPlayer(player, amount);
-        if (r.transactionSuccess()) {
-            return true;
-        } else return false;
+    public static int getPlaytimeSeconds(OfflinePlayer player) {
+        int current_play_ticks;
+        try {
+            current_play_ticks = player.getStatistic(Statistic.valueOf("PLAY_ONE_MINUTE"));
+        } catch (Exception e) {
+            log(ChatColor.RED, "CCaught exception getting player statistic PLAY_ONE_MINUTE: " + e.getMessage());
+            try {
+                current_play_ticks = player.getStatistic(Statistic.valueOf("PLAY_ONE_TICK"));
+            } catch (Exception e2) {
+                log(ChatColor.RED, "CCaught exception getting player statistic PLAY_ONE_TICK: " + e2.getMessage());
+                current_play_ticks = 0;
+            }
+        }
+        return current_play_ticks/20;
     }
 }

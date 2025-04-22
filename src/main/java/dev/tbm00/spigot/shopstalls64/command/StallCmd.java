@@ -120,7 +120,7 @@ public class StallCmd implements TabExecutor {
      * @param args the arguments passed to the command
      * @return true after sudoing the command
      */
-    private boolean handleBuyCmd(Player player, String[] args) {
+    /*private boolean handleBuyCmd(Player player, String[] args) {
         int count;
         if (args.length<2 || args[1]==null || args[1].isBlank()) count = 1;
         else {
@@ -150,7 +150,7 @@ public class StallCmd implements TabExecutor {
                 return true;
             } 
         }
-    }
+    }*/
 
     /**
      * Handles the sub command for storing inventory items into display shops.
@@ -158,7 +158,7 @@ public class StallCmd implements TabExecutor {
      * @param player the command sender
      * @return true if command was processed successfully
      */
-    private boolean handleStoreInvCmd(Player player) {
+    /*private boolean handleStoreInvCmd(Player player) {
         if (!StaticUtils.hasPermission(player, PLAYER_PERM)) {
             StaticUtils.sendMessage(player, "&cNo permission!");
             return true;
@@ -211,7 +211,7 @@ public class StallCmd implements TabExecutor {
         else StaticUtils.sendMessage(player, "&aStored a total of " + item_stored + " items into your shops!");
 
         return true;
-    }
+    }*/
 
     /**
      * Handles the sub command for depositing money into shops.
@@ -220,7 +220,7 @@ public class StallCmd implements TabExecutor {
      * @param args the arguments passed to the command
      * @return true if command was processed successfully
      */
-    private boolean handleDepositCmd(Player player, String[] args) {
+    /*private boolean handleDepositCmd(Player player, String[] args) {
         if (!StaticUtils.hasPermission(player, PLAYER_PERM)) {
             StaticUtils.sendMessage(player, "&cNo permission!");
             return true;
@@ -290,7 +290,7 @@ public class StallCmd implements TabExecutor {
 
         StaticUtils.sendMessage(player, "&aDeposited a total of $" + StaticUtils.formatInt(amount_deposited) + " into " + shops_affected + " of your shops!");
         return true;
-    }
+    }*/
 
     /**
      * Handles the sub command for withdrawing money into shops.
@@ -299,7 +299,7 @@ public class StallCmd implements TabExecutor {
      * @param args the arguments passed to the command
      * @return true if command was processed successfully
      */
-    private boolean handleWithdrawCmd(Player player, String[] args) {
+    /*private boolean handleWithdrawCmd(Player player, String[] args) {
         if (!StaticUtils.hasPermission(player, PLAYER_PERM)) {
             StaticUtils.sendMessage(player, "&cNo permission!");
             return true;
@@ -362,5 +362,6 @@ public class StallCmd implements TabExecutor {
 
         StaticUtils.sendMessage(player, "&aWithdrew a total of $" + StaticUtils.formatInt(amount_withdrew) + " from " + shops_affected + " of your shops!");
         return true;
-    }
+    }*/
+    
 }

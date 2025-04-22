@@ -49,7 +49,7 @@ public class AdminCmd implements TabExecutor {
         String subCmd = args[0].toLowerCase();
         switch (subCmd) {
             case "help":
-                // implement: return handleHelpCmd(player);
+                return handleHelpCmd(player);
             case "create":
                 // implement: return handleCreateCmd(player);
             case "delete":

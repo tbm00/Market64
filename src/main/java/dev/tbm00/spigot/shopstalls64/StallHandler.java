@@ -221,7 +221,11 @@ public class StallHandler {
      * Process (in order, for each stall): 
      *  - If stall is active, check if the renewal date has passed.
      *     - If the renewal date has passed, remove the renewal price from OfflinePlayer's vault balance
-     *        - If that fails (ie they don't have enough money), evict them from the stall
+     *        - If that fails (ie they don't have enough money), evict the stall
+     *     - If the renewal date hasn't passed, check if the stall has had a transaction in the last week (using last transaction date)
+     *        - If it has been a week since the transcation date, evict the stall
+     *        - If it hasn'tbeen a week since the transcation date, check if the player has more than 3 weeks of playtime
+     *           - If renter has more than 3 weeks of playtime, evict the stall
      * Then returns the amount of shops that were evicted
      */
     private int dailyTask() {
