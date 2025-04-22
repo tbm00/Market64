@@ -30,26 +30,26 @@ public class StallHandler {
         this.gdHook = gdHook;
         this.ecoHook = ecoHook;
 
-        loadStalls();
+        loadStallEntries();
     }
 
     // loads stalls from mysqlConnection
-    private void loadStalls() {
+    private void loadStallEntries() {
 
     }
 
     // creates stall on mysqlConnection
-    private void createStallInSQL(Stall stall) {
+    private void createEntryInSQL(Stall stall) {
 
     }
 
     // updates stall on mysqlConnection
-    private void updateStallInSQL(Stall stall) {
+    private void updateEntryInSQL(Stall stall) {
 
     }
 
     // deletes stall on mysqlConnection
-    private void deleteStallFromSQL(int id) {
+    private void deleteEntryFromSQL(int id) {
 
     }
 
