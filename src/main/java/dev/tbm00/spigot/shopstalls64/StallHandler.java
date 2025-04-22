@@ -1,5 +1,6 @@
 package dev.tbm00.spigot.shopstalls64;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.OfflinePlayer;
@@ -7,6 +8,7 @@ import org.bukkit.entity.Player;
 
 import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
+import dev.tbm00.spigot.shopstalls64.data.Stall;
 import dev.tbm00.spigot.shopstalls64.hook.DSHook;
 import dev.tbm00.spigot.shopstalls64.hook.EcoHook;
 import dev.tbm00.spigot.shopstalls64.hook.GDHook;
@@ -18,12 +20,49 @@ public class StallHandler {
     public final GDHook gdHook;
     public final EcoHook ecoHook;
 
+    // stored sorted in order of stalls' ids
+    public ArrayList<Stall> stalls = new ArrayList<Stall>();
+
     public StallHandler(ConfigHandler configHandler, MySQLConnection mysqlConnection, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
         this.configHandler = configHandler;
         this.mysqlConnection = mysqlConnection;
         this.dsHook = dsHook;
         this.gdHook = gdHook;
         this.ecoHook = ecoHook;
+
+        loadStalls();
+    }
+
+    // loads stalls from mysqlConnection
+    private void loadStalls() {
+
+    }
+
+    // creates stall on mysqlConnection
+    private void createStallInSQL(Stall stall) {
+
+    }
+
+    // updates stall on mysqlConnection
+    private void updateStallInSQL(Stall stall) {
+
+    }
+
+    // deletes stall on mysqlConnection
+    private void deleteStallFromSQL(int id) {
+
+    }
+
+    // get stall from internal list
+    // if it doesn't exist, try to get it from mysqlconnection, then populate internal list with query result
+    // return the stall or null
+    public Stall getStall(int id) {
+        return null;
+    }
+
+    // get internal stalls
+    public ArrayList<Stall> getStalls() {
+        return stalls;
     }
 
     /**
@@ -41,7 +80,7 @@ public class StallHandler {
      *      - Sets stored balance to 0
      *      - Sets stored stock to 0
      * 
-     *  - Creates internal Stall object with relavant attributes and "empty" renter name
+     *  - Creates internal Stall object with relavant attributes and "empty" renter name, placed in arraylist at the id index
      *  - Adds Stall entry to SQL database
      * 
      *  - Returns true on success, false when there was an error
@@ -52,19 +91,19 @@ public class StallHandler {
      * @param storedGoodLocation String in form of "x,y,z"
      * @param claimUuid UUID
      */
-    private boolean create(int stallId, double initialPrice, double renewalPrice, String world, String storedGoodLocation, UUID claimUuid) {
+    private boolean createStall(int stallId, double initialPrice, double renewalPrice, String world, String storedGoodLocation, UUID claimUuid) {
         return false;
     }
 
     /**
      * Process (in order): 
-     *  - Deletes internal Stall object
-     *  - Deletes Stall entry from SQL database
+     *  - Deletes internal Stall object (sets the object to null in ArrayList, so it stays in same order)
+     *  - Deletes Stall entry from SQL database (using updateStall())
      * 
      *  - Returns true on success, false when there was an error
      * @param stallId int
      */
-    private boolean delete(int stallId) {
+    private boolean deleteStall(int stallId) {
         return false;
     }
 
@@ -86,7 +125,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean rentInitial(int stallId, OfflinePlayer player) {
+    private boolean rentStall(int stallId, OfflinePlayer player) {
         player.getUniqueId();
         return false;
     }
@@ -102,7 +141,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean rentRenewal(int stallId, OfflinePlayer player) {
+    private boolean renewStall(int stallId, OfflinePlayer player) {
         player.getUniqueId();
         return false;
     }
@@ -144,7 +183,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean evict(int stallId, String reason) {
+    private boolean evictStall(int stallId, String reason) {
         return false;
     }
 
@@ -177,7 +216,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean abandon(int stallId, Player player) {
+    private boolean abandonStall(int stallId, Player player) {
         return false;
     }
 
