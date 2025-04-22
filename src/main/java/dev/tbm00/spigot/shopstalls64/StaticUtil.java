@@ -23,13 +23,13 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 
-public class StaticUtils {
+public class StaticUtil {
     private static ShopStalls64 javaPlugin;
     private static ConfigHandler configHandler;
 
     public static void init(ShopStalls64 javaPlugin, ConfigHandler configHandler) {
-        StaticUtils.javaPlugin = javaPlugin;
-        StaticUtils.configHandler = configHandler;
+        StaticUtil.javaPlugin = javaPlugin;
+        StaticUtil.configHandler = configHandler;
     }
 
     /**

@@ -30,7 +30,7 @@ public class ShopStalls64 extends JavaPlugin {
         if (getConfig().contains("enabled") && getConfig().getBoolean("enabled")) {
             configHandler = new ConfigHandler(this);
 
-            StaticUtils.init(this, configHandler);
+            StaticUtil.init(this, configHandler);
 
             // Connect to MySQL
             try {
@@ -41,7 +41,7 @@ public class ShopStalls64 extends JavaPlugin {
                 return;
             }
 
-            StaticUtils.log(ChatColor.LIGHT_PURPLE,
+            StaticUtil.log(ChatColor.LIGHT_PURPLE,
                     ChatColor.DARK_PURPLE + "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
                     pdf.getName() + " v" + pdf.getVersion() + " created by tbm00",
                     ChatColor.DARK_PURPLE + "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -105,7 +105,7 @@ public class ShopStalls64 extends JavaPlugin {
             return false;
         }
 
-        StaticUtils.log(ChatColor.GREEN, "DisplayShops hooked.");
+        StaticUtil.log(ChatColor.GREEN, "DisplayShops hooked.");
         return true;
     }
 
@@ -119,7 +119,7 @@ public class ShopStalls64 extends JavaPlugin {
 
         gdHook = new GDHook();
 
-        StaticUtils.log(ChatColor.GREEN, "GriefDefender hooked.");
+        StaticUtil.log(ChatColor.GREEN, "GriefDefender hooked.");
         return true;
     }
 
@@ -137,7 +137,7 @@ public class ShopStalls64 extends JavaPlugin {
             return false;
         }
 
-        StaticUtils.log(ChatColor.GREEN, "Vault hooked.");
+        StaticUtil.log(ChatColor.GREEN, "Vault hooked.");
         return true;
     }
 
@@ -154,7 +154,7 @@ public class ShopStalls64 extends JavaPlugin {
             repHook = (Rep64) rep64;
         else return false;
 
-        StaticUtils.log(ChatColor.GREEN, "Rep64 hooked.");
+        StaticUtil.log(ChatColor.GREEN, "Rep64 hooked.");
         return true;
     }
 

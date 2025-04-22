@@ -11,7 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtils;
+import dev.tbm00.spigot.shopstalls64.StaticUtil;
 import dev.tbm00.spigot.shopstalls64.StallHandler;
 
 public class AdminCmd implements TabExecutor {
@@ -33,8 +33,8 @@ public class AdminCmd implements TabExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        if (!StaticUtils.hasPermission(sender, ADMIN_PERM)) {
-            StaticUtils.sendMessage(sender, "&cNo permission!");
+        if (!StaticUtil.hasPermission(sender, ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
             return true;
         }
 
@@ -94,28 +94,4 @@ public class AdminCmd implements TabExecutor {
         }
         return list;
     }
-
-    // THE FOLLOWING METHODS ARE LEFTOVERS FROM DISPLAYSHOPADDON64
-
-    /**
-     * Transfers display shops from source player to target player.
-     * 
-     * @return true once transfer completes
-     */
-    /*private boolean tShops() {
-        ConcurrentHashMap<String, Shop> dsMap = Data64.dsHook.getManager().getShopMap();
-
-        UUID uuidA = playerA.getUniqueId(), uuidB = playerB.getUniqueId();
-
-        int i = 0;
-        for (Shop shop : dsMap.values()) {
-            if (shop.getOwnerUniqueId()!=null && shop.getOwnerUniqueId().equals(uuidA)) {
-                shop.setOwnerUniqueId(uuidB);
-                ++i;
-            }
-        }
-
-        javaPlugin.sendMessage(sender, ChatColor.YELLOW + "tShops: " + i);
-        return true;
-    }*/
 }

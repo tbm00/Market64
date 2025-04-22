@@ -15,7 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtils;
+import dev.tbm00.spigot.shopstalls64.StaticUtil;
 
 public class StallDAO {
     private final MySQLConnection db;
@@ -77,7 +77,7 @@ public class StallDAO {
                 out.add(newStallFromResultSet(rs));
             }
         } catch (SQLException e) {
-            StaticUtils.log(ChatColor.RED, "Error loading stalls: " + e.getMessage());
+            StaticUtil.log(ChatColor.RED, "Error loading stalls: " + e.getMessage());
         }
         return out;
     }
@@ -92,7 +92,7 @@ public class StallDAO {
                 }
             }
         } catch (SQLException e) {
-            StaticUtils.log(ChatColor.RED, "Error loading stall " + id + ": " + e.getMessage());
+            StaticUtil.log(ChatColor.RED, "Error loading stall " + id + ": " + e.getMessage());
         }
         return null;
     }
@@ -103,7 +103,7 @@ public class StallDAO {
                 prepareStatement(ps, s);
                 return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            StaticUtils.log(ChatColor.RED, "Error inserting stall: " + e.getMessage());
+            StaticUtil.log(ChatColor.RED, "Error inserting stall: " + e.getMessage());
             return false;
         }
     }
@@ -115,7 +115,7 @@ public class StallDAO {
                 ps.setInt(12, s.getId());
                 return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            StaticUtils.log(ChatColor.RED, "Error updating stall: " + e.getMessage());
+            StaticUtil.log(ChatColor.RED, "Error updating stall: " + e.getMessage());
             return false;
         }
     }
@@ -126,7 +126,7 @@ public class StallDAO {
                 ps.setInt(1, id);
                 return ps.executeUpdate() == 1;
         } catch (SQLException e) {
-            StaticUtils.log(ChatColor.RED, "Error deleting stall: " + e.getMessage());
+            StaticUtil.log(ChatColor.RED, "Error deleting stall: " + e.getMessage());
             return false;
         }
     }

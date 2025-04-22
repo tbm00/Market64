@@ -43,4 +43,3 @@ public class ShopTransaction implements Listener {
         }
     }
 }
-
