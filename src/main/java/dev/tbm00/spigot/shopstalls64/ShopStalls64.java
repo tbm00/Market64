@@ -4,22 +4,22 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import net.milkbowl.vault.economy.Economy;
-import xzot1k.plugins.ds.DisplayShops;
 import dev.tbm00.spigot.rep64.Rep64;
 
-import dev.tbm00.spigot.shopstalls64.utils.*;
+import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
+import dev.tbm00.spigot.shopstalls64.hook.*;
 import dev.tbm00.spigot.shopstalls64.command.*;
-import dev.tbm00.spigot.shopstalls64.listener.PlayerMovement;
-import dev.tbm00.spigot.shopstalls64.task.DescChangeTask;
+import dev.tbm00.spigot.shopstalls64.listener.ShopTransaction;
 
 public class ShopStalls64 extends JavaPlugin {
     private ConfigHandler configHandler;
-    public static DisplayShops dsHook;
-    public static Economy ecoHook;
+    private MySQLConnection mysqlConnection;
+    private StallHandler stallHandler;
+    public static DSHook dsHook;
+    public static GDHook gdHook;
+    public static EcoHook ecoHook;
     public static Rep64 repHook;
 
     @Override
@@ -30,33 +30,33 @@ public class ShopStalls64 extends JavaPlugin {
         if (getConfig().contains("enabled") && getConfig().getBoolean("enabled")) {
             configHandler = new ConfigHandler(this);
 
-            Utils.init(this, configHandler);
-            ShopUtils.init(this, configHandler);
-            GuiUtils.init(this, configHandler);
-            
-            Utils.log(ChatColor.LIGHT_PURPLE,
+            StaticUtils.init(this, configHandler);
+
+            // Connect to MySQL
+            try {
+                mysqlConnection = new MySQLConnection(this);
+            } catch (Exception e) {
+                getLogger().severe("Failed to connect to MySQL. Disabling plugin.");
+                getServer().getPluginManager().disablePlugin(this);
+                return;
+            }
+
+            StaticUtils.log(ChatColor.LIGHT_PURPLE,
                     ChatColor.DARK_PURPLE + "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-",
                     pdf.getName() + " v" + pdf.getVersion() + " created by tbm00",
                     ChatColor.DARK_PURPLE + "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
             );
 
             setupHooks();
-
             if (configHandler.isFeatureEnabled()) {
+                stallHandler = new StallHandler(configHandler, mysqlConnection, dsHook, gdHook, ecoHook);
+
                 // Register Listener
-                getServer().getPluginManager().registerEvents(new PlayerMovement(), this);
+                getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);
                 
                 // Register Commands
-                getCommand("testshop").setExecutor(new ShopCmd(this, configHandler));
-                getCommand("testbuy").setExecutor(new BuyCmd(configHandler));
-                getCommand("testsell").setExecutor(new SellCmd(this, configHandler));
-                getCommand("testsellgui").setExecutor(new SellGuiCmd(this));
-                getCommand("testsellinv").setExecutor(new SellInvCmd());
-                getCommand("testshopadmin").setExecutor(new AdminCmd());
-
-                if (configHandler.isDsDescChanged()) {
-                    new DescChangeTask();
-                }
+                getCommand("teststall").setExecutor(new StallCmd(stallHandler));
+                getCommand("teststalladmin").setExecutor(new AdminCmd(stallHandler));
             }
         }
     }
@@ -68,6 +68,12 @@ public class ShopStalls64 extends JavaPlugin {
     private void setupHooks() {
         if (!setupDisplayShops()) {
             getLogger().severe("DisplayShops hook failed -- disabling plugin!");
+            disablePlugin();
+            return;
+        }
+
+        if (!setupGriefDefender()) {
+            getLogger().severe("GriefDefender hook failed -- disabling plugin!");
             disablePlugin();
             return;
         }
@@ -93,9 +99,27 @@ public class ShopStalls64 extends JavaPlugin {
     private boolean setupDisplayShops() {
         if (!isPluginAvailable("DisplayShops")) return false;
 
-        ShopStalls64.dsHook = (DisplayShops) getServer().getPluginManager().getPlugin("DisplayShops");
-        
-        Utils.log(ChatColor.GREEN, "DisplayShops hooked.");
+        dsHook = new DSHook(this);
+
+        if (dsHook==null || dsHook.pl==null) {
+            return false;
+        }
+
+        StaticUtils.log(ChatColor.GREEN, "DisplayShops hooked.");
+        return true;
+    }
+
+    /**
+     * Attempts to hook into the GriefDefender plugin.
+     *
+     * @return true if the hook was successful, false otherwise.
+     */
+    private boolean setupGriefDefender() {
+        if (!isPluginAvailable("GriefDefender")) return false;
+
+        gdHook = new GDHook();
+
+        StaticUtils.log(ChatColor.GREEN, "GriefDefender hooked.");
         return true;
     }
 
@@ -107,12 +131,13 @@ public class ShopStalls64 extends JavaPlugin {
     private boolean setupVault() {
         if (!isPluginAvailable("Vault")) return false;
 
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) return false;
-        ecoHook = rsp.getProvider();
-        if (ecoHook == null) return false;
+        ecoHook = new EcoHook(this);
 
-        Utils.log(ChatColor.GREEN, "Vault hooked.");
+        if (ecoHook==null || ecoHook.pl==null) {
+            return false;
+        }
+
+        StaticUtils.log(ChatColor.GREEN, "Vault hooked.");
         return true;
     }
 
@@ -129,7 +154,7 @@ public class ShopStalls64 extends JavaPlugin {
             repHook = (Rep64) rep64;
         else return false;
 
-        Utils.log(ChatColor.GREEN, "Rep64 hooked.");
+        StaticUtils.log(ChatColor.GREEN, "Rep64 hooked.");
         return true;
     }
 
@@ -156,6 +181,16 @@ public class ShopStalls64 extends JavaPlugin {
      */
     @Override
     public void onDisable() {
+        mysqlConnection.closeConnection();
         getLogger().info("ShopStalls64 disabled..! ");
+    }
+
+    /**
+     * Attempts to grab the MySQL database connection
+     *
+     * @return current MySQL database connection
+     */
+    public MySQLConnection getDatabase() {
+        return mysqlConnection;
     }
 }

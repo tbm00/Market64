@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.utils;
+package dev.tbm00.spigot.shopstalls64;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -9,28 +9,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.block.ShulkerBox;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
 
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.EconomyResponse;
 
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
-import dev.tbm00.spigot.shopstalls64.ConfigHandler;
-
-public class Utils {
+public class StaticUtils {
     private static ShopStalls64 javaPlugin;
     private static ConfigHandler configHandler;
     public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();
 
     public static void init(ShopStalls64 javaPlugin, ConfigHandler configHandler) {
-        Utils.javaPlugin = javaPlugin;
-        Utils.configHandler = configHandler;
+        StaticUtils.javaPlugin = javaPlugin;
+        StaticUtils.configHandler = configHandler;
     }
 
     /**
@@ -127,6 +127,33 @@ public class Utils {
     }
 
     /**
+     * Creates a shulker box containing items from the provided list.
+     * 
+     * @param name the display name for the shulker box
+     * @param items the list of ItemStack objects to store in the shulker box; items are removed as they are added
+     * @return the created shulker box ItemStack
+     */
+    private ItemStack createShulkerBox(String name, List<ItemStack> items) {
+        ItemStack shulker = new ItemStack(Material.SHULKER_BOX);
+        BlockStateMeta meta = (BlockStateMeta) shulker.getItemMeta();
+        if (meta == null) return shulker;
+
+        ShulkerBox shulkerBlock = (ShulkerBox) meta.getBlockState();
+        Inventory shulkerInv = shulkerBlock.getInventory();
+        
+        // Fill the shulker
+        for (int i = 0; i < 27 && !items.isEmpty(); i++) {
+            shulkerInv.setItem(i, items.remove(0));
+        }
+        
+        meta.setBlockState(shulkerBlock);
+        meta.setDisplayName(name);
+        
+        shulker.setItemMeta(meta);
+        return shulker;
+    }
+
+    /**
      * Teleports a player to the given world and coordinates after a 5-second delay.
      * If the player moves during the delay, the teleport is cancelled.
      *
@@ -140,11 +167,11 @@ public class Utils {
     public static boolean teleportPlayer(Player player, String worldName, double x, double y, double z) {
         String playerName = player.getName();
         if (pendingTeleports.contains(playerName)) {
-            Utils.sendMessage(player, "&cYou are already waiting for a teleport!");
+            StaticUtils.sendMessage(player, "&cYou are already waiting for a teleport!");
             return false;
         }
         pendingTeleports.add(playerName);
-        Utils.sendMessage(player, "&aTeleporting in 3 seconds -- don't move!");
+        StaticUtils.sendMessage(player, "&aTeleporting in 3 seconds -- don't move!");
 
         // Schedule the teleport to run later
         Bukkit.getScheduler().runTaskLater(javaPlugin, () -> {
@@ -156,7 +183,7 @@ public class Utils {
                     Location targetLocation = new Location(targetWorld, x, y, z);
                     player.teleport(targetLocation);
                 } else {
-                    Utils.sendMessage(player, "&cWorld not found!");
+                    StaticUtils.sendMessage(player, "&cWorld not found!");
                 }
             }
         }, 60L);
@@ -220,7 +247,7 @@ public class Utils {
      * @return true if the withdrawal transaction was successful, false otherwise
      */
     public static boolean removeMoney(Player player, double amount) {
-        EconomyResponse r = ShopStalls64.ecoHook.withdrawPlayer(player, amount);
+        EconomyResponse r = ShopStalls64.ecoHook.pl.withdrawPlayer(player, amount);
         if (r.transactionSuccess()) {
             return true;
         } else return false;
@@ -234,7 +261,7 @@ public class Utils {
      * @return true if the deposit transaction was successful, false otherwise
      */
     public static boolean addMoney(Player player, double amount) {
-        EconomyResponse r = ShopStalls64.ecoHook.depositPlayer(player, amount);
+        EconomyResponse r = ShopStalls64.ecoHook.pl.depositPlayer(player, amount);
         if (r.transactionSuccess()) {
             return true;
         } else return false;

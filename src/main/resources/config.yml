@@ -3,14 +3,25 @@
 
 enabled: true
 
+mysql:
+  host: 'host'
+  port: 3306
+  database: 'db'
+  username: 'user'
+  password: 'pass'
+  useSSL: false
+  hikari:
+    maximumPoolSize: 16
+    minimumPoolSize: 2
+    idleTimeout: 240 # 4 minutes
+    connectionTimeout: 30 # 30 seconds
+    maxLifetime: 1800 # 30 minutes
+    leakDetection:
+      enabled: false
+      threshold: 2 # 2 seconds
+
 lang:
-  prefix: "&8[&fShop&8] &7"
+  prefix: "&8[&fStall&8] &7"
 
 feature:
   enabled: true
-  dsMaxStoredBalance: 20000000
-  dsMaxStoredStock: 8192
-  dsCreationItemPrice: 4000
-  guiDefaultCategory: "shopgui"
-  dsDescChange: true
-  dsEditorPrevention: true
