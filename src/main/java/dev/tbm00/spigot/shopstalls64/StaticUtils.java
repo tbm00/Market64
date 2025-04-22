@@ -3,14 +3,11 @@ package dev.tbm00.spigot.shopstalls64;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
-import org.bukkit.World;
 import org.bukkit.block.ShulkerBox;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
@@ -23,7 +20,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 import net.md_5.bungee.api.chat.TextComponent;
-import net.milkbowl.vault.economy.EconomyResponse;
 
 import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 
@@ -136,7 +132,7 @@ public class StaticUtils {
      * @param items the list of ItemStack objects to store in the shulker box; items are removed as they are added
      * @return the created shulker box ItemStack
      */
-    private ItemStack createShulkerBox(String name, List<ItemStack> items) {
+    public ItemStack createShulkerBox(String name, List<ItemStack> items) {
         ItemStack shulker = new ItemStack(Material.SHULKER_BOX);
         BlockStateMeta meta = (BlockStateMeta) shulker.getItemMeta();
         if (meta == null) return shulker;

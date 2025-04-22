@@ -1,17 +1,26 @@
 package dev.tbm00.spigot.shopstalls64.data;
 
-import java.sql.Date;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.World;
+
+import com.griefdefender.api.claim.Claim;
+
+import xzot1k.plugins.ds.api.objects.Shop;
 
 public class Stall {
     private int id;
     private UUID claimUuid; // use ShopStalls64.gdHook.getClaimByUuid(World, UUID)
-    private UUID[] shopUuids; // use ShopStalls64.dsHook.getManager().getShopById(UUID)
+    private Claim claim;  // not stored in mysql
+    private Set<UUID> shopUuids; // not stored in mysql
+    private ConcurrentHashMap<String, Shop> shops; // not stored in mysql
     private World world;
     private int[] storageCoords; // x,y,z
-    private Double intialPrice;
+    private Double initialPrice;
     private Double renewalPrice;
     private boolean rented;
     private UUID renterUuid;
@@ -24,10 +33,11 @@ public class Stall {
      *
      * @param id unique identifier for the stall
      * @param claimUuid UUID of the land claim
-     * @param shopUuids UUIDs of shops in the stall
+     * @param claim the land claim for the stall
+     * @param shops Map of shops in the stall
      * @param world world where the stall resides
      * @param storageCoords coordinates (x, y, z) for expired goods storage
-     * @param intialPrice initial rental price
+     * @param initialPrice initial rental price
      * @param renewalPrice renewal rental price
      * @param rented whether the stall is currently rented
      * @param renterUuid UUID of the renter
@@ -37,10 +47,12 @@ public class Stall {
      */
     public Stall(int id,
                  UUID claimUuid,
-                 UUID[] shopUuids,
+                 Claim claim,
+                 Set<UUID> shopUuids,
+                 ConcurrentHashMap<String, Shop> shops,
                  World world,
                  int[] storageCoords,
-                 Double intialPrice,
+                 Double initialPrice,
                  Double renewalPrice,
                  boolean rented,
                  UUID renterUuid,
@@ -49,10 +61,12 @@ public class Stall {
                  Date lastTranscation) {
         this.id = id;
         this.claimUuid = claimUuid;
-        this.shopUuids = shopUuids;
+        this.claim = claim;
+        this.shopUuids = new HashSet<>(shopUuids);
+        this.shops = shops;
         this.world = world;
         this.storageCoords = storageCoords;
-        this.intialPrice = intialPrice;
+        this.initialPrice = initialPrice;
         this.renewalPrice = renewalPrice;
         this.rented = rented;
         this.renterUuid = renterUuid;
@@ -79,13 +93,39 @@ public class Stall {
         this.claimUuid = claimUuid;
     }
 
+    /** @return the claim */
+    public Claim getClaim() {
+        return claim;
+    }
+    /** @param claim the claim to set */
+    public void setClaim(Claim claim) {
+        this.claim = claim;
+    }
+
     /** @return the shop UUIDs */
-    public UUID[] getShopUuids() {
+    public Set<UUID> getShopUuids() {
         return shopUuids;
     }
     /** @param shopUuids the shop UUIDs to set */
-    public void setShopUuids(UUID[] shopUuids) {
+    public void setShopUuids(Set<UUID> shopUuids) {
         this.shopUuids = shopUuids;
+    }
+    /** @param uuid the shop UUID to add */
+    public void addShopUuidToSet(UUID uuid) {
+        shopUuids.add(uuid);
+    }
+
+    /** @return the shop map */
+    public ConcurrentHashMap<String, Shop> getShopMap() {
+        return shops;
+    }
+    /** @param shops the shop map to set */
+    public void setShopMap(ConcurrentHashMap<String, Shop> shops) {
+        this.shops = shops;
+    }
+    /** @return the shop map */
+    public void addShopToMap(Shop shop, String locationStr) {
+        shops.put(locationStr, shop);
     }
 
     /** @return the world */
@@ -107,12 +147,12 @@ public class Stall {
     }
 
     /** @return the initial price */
-    public Double getIntialPrice() {
-        return intialPrice;
+    public Double getInitialPrice() {
+        return initialPrice;
     }
-    /** @param intialPrice the initial price to set */
-    public void setIntialPrice(Double intialPrice) {
-        this.intialPrice = intialPrice;
+    /** @param initialPrice the initial price to set */
+    public void setInitialPrice(Double initialPrice) {
+        this.initialPrice = initialPrice;
     }
 
     /** @return the renewal price */

@@ -3,24 +3,15 @@
 package dev.tbm00.spigot.shopstalls64.command;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.material.MaterialData;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
-import xzot1k.plugins.ds.api.objects.Shop;
-
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
 import dev.tbm00.spigot.shopstalls64.StaticUtils;
 import dev.tbm00.spigot.shopstalls64.StallHandler;
 import dev.tbm00.spigot.shopstalls64.data.Stall;

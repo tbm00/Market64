@@ -3,8 +3,6 @@
 package dev.tbm00.spigot.shopstalls64.command;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.ArrayList;
 
 import org.bukkit.ChatColor;
@@ -15,15 +13,13 @@ import org.bukkit.entity.Player;
 
 import dev.tbm00.spigot.shopstalls64.StaticUtils;
 import dev.tbm00.spigot.shopstalls64.StallHandler;
-import dev.tbm00.spigot.shopstalls64.data.Stall;
-import xzot1k.plugins.ds.api.objects.Shop;
 
 public class AdminCmd implements TabExecutor {
-    private final StallHandler stallHandler;
+    //private final StallHandler stallHandler;
     private final String ADMIN_PERM = "shopstalls64.admin";
 
     public AdminCmd(StallHandler stallHandler) {
-        this.stallHandler = stallHandler;
+        //this.stallHandler = stallHandler;
     }
 
     /**
@@ -87,7 +83,16 @@ public class AdminCmd implements TabExecutor {
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return new ArrayList<>();
+        List<String> list = new ArrayList<>();
+        if (args.length == 1) {
+            list.clear();
+            String[] subCmds = new String[]{"create","delete","status","evict"};
+            for (String n : subCmds) {
+                if (n!=null && n.startsWith(args[0])) 
+                    list.add(n);
+            }
+        }
+        return list;
     }
 
     // THE FOLLOWING METHODS ARE LEFTOVERS FROM DISPLAYSHOPADDON64

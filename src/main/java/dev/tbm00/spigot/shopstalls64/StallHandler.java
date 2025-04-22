@@ -1,71 +1,91 @@
 package dev.tbm00.spigot.shopstalls64;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+
+import com.griefdefender.api.claim.Claim;
+
+import xzot1k.plugins.ds.api.objects.LocationClone;
+import xzot1k.plugins.ds.api.objects.Shop;
 
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
 import dev.tbm00.spigot.shopstalls64.data.Stall;
+import dev.tbm00.spigot.shopstalls64.data.StallDAO;
 import dev.tbm00.spigot.shopstalls64.hook.DSHook;
 import dev.tbm00.spigot.shopstalls64.hook.EcoHook;
 import dev.tbm00.spigot.shopstalls64.hook.GDHook;
 
 public class StallHandler {
-    private final MySQLConnection mysqlConnection;
+    private final StallDAO dao;
     public final DSHook dsHook;
     public final GDHook gdHook;
     public final EcoHook ecoHook;
 
     // stored sorted in order of stalls' ids
-    public ArrayList<Stall> stalls = new ArrayList<Stall>();
+    private final List<Stall> stalls = new ArrayList<>();
 
-    public StallHandler(MySQLConnection mysqlConnection, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
-        this.mysqlConnection = mysqlConnection;
+    public StallHandler(MySQLConnection db, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
+        this.dao = new StallDAO(db);
         this.dsHook = dsHook;
         this.gdHook = gdHook;
         this.ecoHook = ecoHook;
-
-        loadStallEntries();
+        
+        reloadAll();
     }
 
-    // loads stalls from mysqlConnection
-    private void loadStallEntries() {
+    /**
+     * Process (in order):
+     *  - Clear current internal cache 
+     *  - Get all stall data from sql
+     *  - Get the active claim using the world and uuid
+     *  - Get the active contained shops using the claim's 3d corner blocks
+     *  - Load all stalls to internal cache
+     */
+    /** Load everything into memory. */
+    public void reloadAll() {
+        stalls.clear();
+        List<Stall> stallsToLoad = dao.loadAll();
 
-    }
+        // Load stalls' claims
+        for (Stall stall : stallsToLoad) {
+            stall.setClaim(gdHook.getClaimByUuid(stall.getWorld(), stall.getClaimUuid()));
+        }
 
-    // creates stall on mysqlConnection
-    private void createEntryInSQL(Stall stall) {
+        // Load stalls' shops
+        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+        shopLoop:
+        for (Shop shop : dsMap.values()) {
+            LocationClone shopLoc = shop.getBaseLocation();
 
-    }
+            for (Stall stall : stallsToLoad) {
+                Claim claim = stall.getClaim();
 
-    // updates stall on mysqlConnection
-    private void updateEntryInSQL(Stall stall) {
-
-    }
-
-    // deletes stall on mysqlConnection
-    private void deleteEntryFromSQL(int id) {
-
-    }
-
-    // get stall from internal list
-    // if it doesn't exist, try to get it from mysqlconnection, then populate internal list with query result
-    // return the stall or null
-    public Stall getStall(int id) {
-        return null;
-    }
-
-    // get internal stalls
-    public ArrayList<Stall> getStalls() {
-        return stalls;
+                if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                    String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
+                    stall.addShopToMap(shop, locationStr);
+                    stall.addShopUuidToSet(shop.getShopId());
+                    continue shopLoop;
+                }
+            }
+        }
+        stalls.addAll(stallsToLoad);
     }
 
     /**
      * Process (in order): 
-     *  - Gets the claim using the world and uuid
-     *  - Gets the contained shops using the claim's 3d corner blocks
+     *  - Get the active claim using the world and uuid
+     *  - Get the active contained shops using the claim's 3d corner blocks
      * 
      *  - Sets each shop's data:
      *      - Sets shop owner to all `ffffff`
@@ -85,11 +105,42 @@ public class StallHandler {
      * @param initialPrice double
      * @param renewalPrice double
      * @param world String
-     * @param storedGoodLocation String in form of "x,y,z"
+     * @param storageLoc String in form of "x,y,z"
      * @param claimUuid UUID
      */
-    private boolean createStall(int stallId, double initialPrice, double renewalPrice, String world, String storedGoodLocation, UUID claimUuid) {
-        return false;
+    public boolean createStall(int stallId, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) return false;
+
+        Claim claim = gdHook.getClaimByUuid(world, claimUuid);
+        if (claim == null) return false;
+
+        int[] coords = Arrays.stream(storageLoc.split(","))
+                             .mapToInt(Integer::parseInt)
+                             .toArray();
+
+        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+        ConcurrentHashMap<String, Shop> stallShops = new ConcurrentHashMap<>();
+        Set<UUID> shopUuids = new HashSet<>();
+        shopLoop:
+        for (Shop shop : dsMap.values()) {
+            LocationClone shopLoc = shop.getBaseLocation();
+
+            if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
+                stallShops.put(locationStr, shop);
+                shopUuids.add(shop.getShopId());
+                continue shopLoop;
+            }
+        }
+        
+        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, coords, initialPrice, renewalPrice,
+                            false, null, null, null, null);
+            
+        if (!dao.insert(newStall)) return false;
+        ensureCapacity(stallId);
+        stalls.set(stallId, newStall);
+        return true;
     }
 
     /**
@@ -100,7 +151,7 @@ public class StallHandler {
      *  - Returns true on success, false when there was an error
      * @param stallId int
      */
-    private boolean deleteStall(int stallId) {
+    public boolean deleteStall(int stallId) {
         return false;
     }
 
@@ -122,7 +173,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean rentStall(int stallId, OfflinePlayer player) {
+    public boolean rentStall(int stallId, OfflinePlayer player) {
         player.getUniqueId();
         return false;
     }
@@ -138,7 +189,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean renewStall(int stallId, OfflinePlayer player) {
+    public boolean renewStall(int stallId, OfflinePlayer player) {
         player.getUniqueId();
         return false;
     }
@@ -180,7 +231,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean evictStall(int stallId, String reason) {
+    public boolean evictStall(int stallId, String reason) {
         return false;
     }
 
@@ -213,7 +264,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    private boolean abandonStall(int stallId, Player player) {
+    public boolean abandonStall(int stallId, Player player) {
         return false;
     }
 
@@ -228,20 +279,35 @@ public class StallHandler {
      *           - If renter has more than 3 weeks of playtime, evict the stall
      * Then returns the amount of shops that were evicted
      */
-    private int dailyTask() {
+    public int dailyTask() {
         return 0;
     }
 
-    /**
-     * Process (in order): 
-     *  - Updates the stall's last transcation date
-     * 
-     *  - Updates internal Stall object
-     *  - Updates Stall entry in SQL database
-     *  
-     *  - Returns true on success, false when there was an error
-     */
-    private boolean updateLatestTranscation(int stallId) {
-        return false;
+    /** Get a stall by ID (from cache or from DB if absent). */
+    public Stall getStall(int id) {
+        if (id < 0) return null;
+        if (id < stalls.size() && stalls.get(id) != null) {
+            return stalls.get(id);
+        }
+        Stall s = dao.loadById(id);
+        if (s != null) {
+            ensureCapacity(id);
+            stalls.set(id, s);
+        }
+        return s;
+    }
+
+    /** Return unmodifiable view of all internal cached stalls. */
+    public List<Stall> getStalls() {
+        return Collections.unmodifiableList(stalls);
+    }
+
+    /** Return dao object for accessing database. */
+    public StallDAO getStallDao() {
+        return dao;
+    }
+
+    private void ensureCapacity(int id) {
+        while (stalls.size() <= id) stalls.add(null);
     }
 }

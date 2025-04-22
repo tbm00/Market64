@@ -67,9 +67,8 @@ public class MySQLConnection {
         String playerTable = "CREATE TABLE IF NOT EXISTS shopstalls64_shop (" +
                 "id VARCHAR(4), " +
                 "claim_uuid VARCHAR(36) , " +
-                "shop_uuids List<VARCHAR(36)> , " + // make work
                 "world TEXT, " +
-                "storage_coords TEXT, " + // perhaps could be better
+                "storage_coords TEXT, " +
                 "initial_price DOUBLE, " +
                 "renewal_price DOUBLE, " +
                 "rented BOOLEAN, " +
