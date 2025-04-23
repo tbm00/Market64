@@ -1,5 +1,5 @@
-# ShopStalls64
-A spigot plugin that expands DisplayShops and adds user-friendly shop stalls.
+# Market64
+A spigot plugin that manages MC64's market.
 
 Created by tbm00 for play.mc64.wtf.
 

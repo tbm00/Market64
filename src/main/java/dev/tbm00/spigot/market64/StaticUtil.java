@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64;
+package dev.tbm00.spigot.market64;
 
 import java.text.NumberFormat;
 import java.util.List;
@@ -26,15 +26,17 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
-import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
+import dev.tbm00.spigot.market64.data.ConfigHandler;
 
 public class StaticUtil {
-    private static ShopStalls64 javaPlugin;
+    private static Market64 javaPlugin;
     private static ConfigHandler configHandler;
 
     public static final int MAX_CONTAINED_CLAIMS = 2;
+    public static final String MARKET_WORLD = "Tadow";
+    public static final String MARKET_REGION = "market";
 
-    public static void init(ShopStalls64 javaPlugin, ConfigHandler configHandler) {
+    public static void init(Market64 javaPlugin, ConfigHandler configHandler) {
         StaticUtil.javaPlugin = javaPlugin;
         StaticUtil.configHandler = configHandler;
     }

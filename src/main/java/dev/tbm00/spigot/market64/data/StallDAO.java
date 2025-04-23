@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.data;
+package dev.tbm00.spigot.market64.data;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,20 +15,20 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtil;
+import dev.tbm00.spigot.market64.StaticUtil;
 
 public class StallDAO {
     private final MySQLConnection db;
 
     // SQL statements formatted for readability
     private static final String SELECT_ALL_SQL =
-        "SELECT * FROM shopstalls64_shop";
+        "SELECT * FROM market64_shop";
 
     private static final String SELECT_BY_ID_SQL =
-        "SELECT * FROM shopstalls64_shop WHERE id = ?";
+        "SELECT * FROM market64_shop WHERE id = ?";
 
     private static final String INSERT_SQL = """
-        INSERT INTO shopstalls64_shop (
+        INSERT INTO market64_shop (
             id,
             claim_uuid,
             world,
@@ -45,7 +45,7 @@ public class StallDAO {
         """;
 
     private static final String UPDATE_SQL = """
-        UPDATE shopstalls64_shop
+        UPDATE market64_shop
         SET
             claim_uuid = ?,
             world = ?,
@@ -62,7 +62,7 @@ public class StallDAO {
         """;
 
     private static final String DELETE_SQL =
-        "DELETE FROM shopstalls64_shop WHERE id = ?";
+        "DELETE FROM market64_shop WHERE id = ?";
 
     public StallDAO(MySQLConnection db) {
         this.db = db;

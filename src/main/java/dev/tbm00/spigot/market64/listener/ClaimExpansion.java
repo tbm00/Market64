@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.listener;
+package dev.tbm00.spigot.market64.listener;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -8,7 +8,7 @@ import com.griefdefender.api.claim.Claim;
 import com.griefdefender.api.event.ChangeClaimEvent;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtil;
+import dev.tbm00.spigot.market64.StaticUtil;
 
 public class ClaimExpansion implements Listener {
 
@@ -17,11 +17,11 @@ public class ClaimExpansion implements Listener {
      *
      * @param event the ClaimExpansion
      */
-    public ClaimExpansion(ChangeClaimEvent event, ProtectedRegion wgRegion, String MARKET_WORLD) {
+    public ClaimExpansion(ChangeClaimEvent event, ProtectedRegion wgRegion) {
 
         Claim claim = event.getClaim();
 
-        if (!claim.getWorldName().equalsIgnoreCase(MARKET_WORLD)) return;
+        if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
         if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
 
         if (StaticUtil.isClaimPartlyContained(wgRegion, claim)) {

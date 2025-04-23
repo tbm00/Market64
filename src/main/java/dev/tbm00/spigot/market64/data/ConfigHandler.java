@@ -1,11 +1,11 @@
-package dev.tbm00.spigot.shopstalls64.data;
+package dev.tbm00.spigot.market64.data;
 
 import org.bukkit.configuration.ConfigurationSection;
 
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
+import dev.tbm00.spigot.market64.Market64;
 
 public class ConfigHandler {
-    private final ShopStalls64 javaPlugin;
+    private final Market64 javaPlugin;
     private String chatPrefix;
     private boolean featureEnabled = false;
 
@@ -15,7 +15,7 @@ public class ConfigHandler {
      *
      * @param javaPlugin the main plugin instance
      */
-    public ConfigHandler(ShopStalls64 javaPlugin) {
+    public ConfigHandler(Market64 javaPlugin) {
         this.javaPlugin = javaPlugin;
         try {
             loadLanguageSection();

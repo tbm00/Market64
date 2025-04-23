@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.listener;
+package dev.tbm00.spigot.market64.listener;
 
 import java.util.Date;
 import java.util.UUID;
@@ -8,8 +8,8 @@ import org.bukkit.event.Listener;
 
 import xzot1k.plugins.ds.api.events.ShopTransactionEvent;
 
-import dev.tbm00.spigot.shopstalls64.StallHandler;
-import dev.tbm00.spigot.shopstalls64.data.Stall;
+import dev.tbm00.spigot.market64.StallHandler;
+import dev.tbm00.spigot.market64.data.Stall;
 
 public class ShopTransaction implements Listener {
     private final StallHandler stallHandler;

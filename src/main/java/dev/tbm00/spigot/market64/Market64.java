@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64;
+package dev.tbm00.spigot.market64;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -7,11 +7,11 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.tbm00.spigot.rep64.Rep64;
-import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
-import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
-import dev.tbm00.spigot.shopstalls64.hook.*;
+import dev.tbm00.spigot.market64.data.ConfigHandler;
+import dev.tbm00.spigot.market64.data.MySQLConnection;
+import dev.tbm00.spigot.market64.hook.*;
 
-public class ShopStalls64 extends JavaPlugin {
+public class Market64 extends JavaPlugin {
     private ConfigHandler configHandler;
     private MySQLConnection mysqlConnection;
     private ClaimHandler claimHandler;
@@ -206,7 +206,7 @@ public class ShopStalls64 extends JavaPlugin {
     @Override
     public void onDisable() {
         mysqlConnection.closeConnection();
-        getLogger().info("ShopStalls64 disabled..! ");
+        getLogger().info("Market64 disabled..! ");
     }
 
     /**

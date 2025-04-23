@@ -1,6 +1,6 @@
 
 
-package dev.tbm00.spigot.shopstalls64.command;
+package dev.tbm00.spigot.market64.command;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -11,12 +11,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtil;
-import dev.tbm00.spigot.shopstalls64.StallHandler;
+import dev.tbm00.spigot.market64.StaticUtil;
+import dev.tbm00.spigot.market64.StallHandler;
 
 public class AdminCmd implements TabExecutor {
     //private final StallHandler stallHandler;
-    private final String ADMIN_PERM = "shopstalls64.admin";
+    private final String ADMIN_PERM = "market64.admin";
 
     public AdminCmd(StallHandler stallHandler) {
         //this.stallHandler = stallHandler;

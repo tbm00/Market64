@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64;
+package dev.tbm00.spigot.market64;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,13 +22,13 @@ import com.griefdefender.api.claim.Claim;
 import xzot1k.plugins.ds.api.objects.LocationClone;
 import xzot1k.plugins.ds.api.objects.Shop;
 
-import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
-import dev.tbm00.spigot.shopstalls64.data.Stall;
-import dev.tbm00.spigot.shopstalls64.data.StallDAO;
-import dev.tbm00.spigot.shopstalls64.hook.DSHook;
-import dev.tbm00.spigot.shopstalls64.hook.EcoHook;
-import dev.tbm00.spigot.shopstalls64.hook.GDHook;
-import dev.tbm00.spigot.shopstalls64.hook.WGHook;
+import dev.tbm00.spigot.market64.data.MySQLConnection;
+import dev.tbm00.spigot.market64.data.Stall;
+import dev.tbm00.spigot.market64.data.StallDAO;
+import dev.tbm00.spigot.market64.hook.DSHook;
+import dev.tbm00.spigot.market64.hook.EcoHook;
+import dev.tbm00.spigot.market64.hook.GDHook;
+import dev.tbm00.spigot.market64.hook.WGHook;
 
 public class StallHandler {
     private final StallDAO dao;

@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.hook;
+package dev.tbm00.spigot.market64.hook;
 
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -6,13 +6,13 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
+import dev.tbm00.spigot.market64.Market64;
 
 public class EcoHook {
 
     public Economy pl;
     
-    public EcoHook(ShopStalls64 javaPlugin) {
+    public EcoHook(Market64 javaPlugin) {
         RegisteredServiceProvider<Economy> rsp = javaPlugin.getServer().getServicesManager().getRegistration(Economy.class);
         pl = rsp.getProvider();
     }

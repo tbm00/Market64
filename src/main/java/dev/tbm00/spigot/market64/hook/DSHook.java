@@ -1,17 +1,17 @@
-package dev.tbm00.spigot.shopstalls64.hook;
+package dev.tbm00.spigot.market64.hook;
 
 import xzot1k.plugins.ds.DisplayShops;
 import xzot1k.plugins.ds.api.objects.LocationClone;
 
 import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 
-import dev.tbm00.spigot.shopstalls64.ShopStalls64;
+import dev.tbm00.spigot.market64.Market64;
 
 public class DSHook {
 
     public DisplayShops pl;
     
-    public DSHook(ShopStalls64 javaPlugin) {
+    public DSHook(Market64 javaPlugin) {
         pl = ((DisplayShops) javaPlugin.getServer().getPluginManager().getPlugin("DisplayShops"));
     }
 
@@ -56,14 +56,14 @@ public class DSHook {
         }
 
         int totalPrice = 10 * count;
-        double pocketBal = ShopStalls64.ecoHook.pl.getBalance(player);
+        double pocketBal = Market64.ecoHook.pl.getBalance(player);
 
         if (totalPrice>pocketBal) {
             StaticUtil.sendMessage(player, "&cYou do not have the $" + StaticUtil.formatInt(totalPrice) + " required to buy " + count + " shop items!");
             return true;
         } else {
             if (StaticUtil.removeMoney(player, totalPrice)) {
-                ItemStack shopItem = ShopStalls64.dsHook.pl.getManager().buildShopCreationItem(player, count);
+                ItemStack shopItem = Market64.dsHook.pl.getManager().buildShopCreationItem(player, count);
                 shopItem.setAmount(count);
                 StaticUtil.giveItem(player, shopItem);
                 StaticUtil.sendMessage(player, "&aYou bought " + count + " shop items for $" + StaticUtil.formatInt(totalPrice) + "!");
@@ -87,7 +87,7 @@ public class DSHook {
             return true;
         }
 
-        ConcurrentHashMap<String, Shop> dsMap = ShopStalls64.dsHook.pl.getManager().getShopMap();
+        ConcurrentHashMap<String, Shop> dsMap = Market64.dsHook.pl.getManager().getShopMap();
         int MAX_STOCK = 10;
         UUID uuid = player.getUniqueId();
         int item_stored = 0;
@@ -154,7 +154,7 @@ public class DSHook {
             return true;
         }
 
-        ConcurrentHashMap<String, Shop> dsMap = ShopStalls64.dsHook.pl.getManager().getShopMap();
+        ConcurrentHashMap<String, Shop> dsMap = Market64.dsHook.pl.getManager().getShopMap();
         UUID uuid = player.getUniqueId();
         int shop_count = 0; //ShopUtils.countPlayerShops(dsMap, uuid);
         if (shop_count<1) {
@@ -164,7 +164,7 @@ public class DSHook {
 
         // Determine how much to deposit into each shop
         String passedString = args[1];
-        double pocket_balance = ShopStalls64.ecoHook.pl.getBalance(player), deposit_per;
+        double pocket_balance = Market64.ecoHook.pl.getBalance(player), deposit_per;
         double max_possible_deposit_per = Math.floor(pocket_balance / shop_count);
         if (passedString.equalsIgnoreCase("max")) {
             deposit_per = max_possible_deposit_per;
@@ -233,7 +233,7 @@ public class DSHook {
             return true;
         }
 
-        ConcurrentHashMap<String, Shop> dsMap = ShopStalls64.dsHook.pl.getManager().getShopMap();
+        ConcurrentHashMap<String, Shop> dsMap = Market64.dsHook.pl.getManager().getShopMap();
         UUID uuid = player.getUniqueId();
         int shop_count = 0; //ShopUtils.countPlayerShops(dsMap, uuid);
         if (shop_count<1) {

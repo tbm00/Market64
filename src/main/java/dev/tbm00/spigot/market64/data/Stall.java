@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.data;
+package dev.tbm00.spigot.market64.data;
 
 import java.util.Date;
 import java.util.HashSet;

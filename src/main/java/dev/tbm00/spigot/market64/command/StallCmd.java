@@ -1,6 +1,6 @@
 
 
-package dev.tbm00.spigot.shopstalls64.command;
+package dev.tbm00.spigot.market64.command;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -12,13 +12,13 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import dev.tbm00.spigot.shopstalls64.StaticUtil;
-import dev.tbm00.spigot.shopstalls64.StallHandler;
-import dev.tbm00.spigot.shopstalls64.data.Stall;
+import dev.tbm00.spigot.market64.StaticUtil;
+import dev.tbm00.spigot.market64.StallHandler;
+import dev.tbm00.spigot.market64.data.Stall;
 
 public class StallCmd implements TabExecutor {
     private final StallHandler stallHandler;
-    private final String PLAYER_PERM = "shopstalls64.player";
+    private final String PLAYER_PERM = "market64.player";
 
     public StallCmd(StallHandler stallHandler) {
         this.stallHandler = stallHandler;

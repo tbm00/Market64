@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.hook;
+package dev.tbm00.spigot.market64.hook;
 
 import java.util.UUID;
 

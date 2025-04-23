@@ -1,4 +1,4 @@
-package dev.tbm00.spigot.shopstalls64.data;
+package dev.tbm00.spigot.market64.data;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -64,7 +64,7 @@ public class MySQLConnection {
     }
 
     private void initializeDatabase() {
-        String playerTable = "CREATE TABLE IF NOT EXISTS shopstalls64_shop (" +
+        String playerTable = "CREATE TABLE IF NOT EXISTS market64_shop (" +
                 "id INT PRIMARY KEY, " +
                 "claim_uuid VARCHAR(36) , " +
                 "world TEXT, " +
