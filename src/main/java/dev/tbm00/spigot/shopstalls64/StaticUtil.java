@@ -3,6 +3,7 @@ package dev.tbm00.spigot.shopstalls64;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -19,6 +20,10 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
+import com.griefdefender.api.claim.Claim;
+import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+
 import net.md_5.bungee.api.chat.TextComponent;
 
 import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
@@ -26,6 +31,8 @@ import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 public class StaticUtil {
     private static ShopStalls64 javaPlugin;
     private static ConfigHandler configHandler;
+
+    public static final int MAX_CONTAINED_CLAIMS = 2;
 
     public static void init(ShopStalls64 javaPlugin, ConfigHandler configHandler) {
         StaticUtil.javaPlugin = javaPlugin;
@@ -219,5 +226,87 @@ public class StaticUtil {
             }
         }
         return current_play_ticks/20;
+    }
+
+    /**
+     * Checks if the GriefDefender claim is contained within the WorldGuard region
+     *
+     * @return true if contained, false otherwise
+     */
+    public static boolean isClaimContained(ProtectedRegion wgRegion, Claim userClaim) {
+        if (userClaim==null) return false;
+
+        Vector3i northWest  = userClaim.getLesserBoundaryCorner();
+        Vector3i southEast = userClaim.getGreaterBoundaryCorner();
+
+        Vector3i[] claimedBlocks = new Vector3i[] {
+            new Vector3i(northWest.getX(),  100, northWest.getZ()),     // NW
+            new Vector3i(southEast.getX(), 100, northWest.getZ()),      // NE
+            new Vector3i(southEast.getX(), 100, southEast.getZ()),      // SE
+            new Vector3i(northWest.getX(),  100, southEast.getZ()),      // SW
+            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, southEast.getZ()), // S
+            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, northWest.getZ()), // N
+            new Vector3i(northWest.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // W
+            new Vector3i(southEast.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // E
+        };
+
+        for (Vector3i block : claimedBlocks) {
+            if (wgRegion.contains(block.getX(), 100, block.getZ())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the GriefDefender claim is contained within the WorldGuard region
+     *
+     * @return true if contained, false otherwise
+     */
+    public static boolean isClaimPartlyContained(ProtectedRegion wgRegion, Claim userClaim) {
+        if (userClaim==null) return false;
+
+        if (!isClaimContained(wgRegion, userClaim)) return false;
+
+        Vector3i northWest  = userClaim.getLesserBoundaryCorner();
+        Vector3i southEast = userClaim.getGreaterBoundaryCorner();
+
+        Vector3i[] claimedBlocks = new Vector3i[] {
+            new Vector3i(northWest.getX(),  100, northWest.getZ()),     // NW
+            new Vector3i(southEast.getX(), 100, northWest.getZ()),      // NE
+            new Vector3i(southEast.getX(), 100, southEast.getZ()),      // SE
+            new Vector3i(northWest.getX(),  100, southEast.getZ()),      // SW
+            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, southEast.getZ()), // S
+            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, northWest.getZ()), // N
+            new Vector3i(northWest.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // W
+            new Vector3i(southEast.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // E
+        };
+
+        for (Vector3i block : claimedBlocks) {
+            if (!wgRegion.contains(block.getX(), 100, block.getZ())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the GriefDefender claim is contained within the WorldGuard region
+     *
+     * @return true if contained, false otherwise
+     */
+    public static boolean hasMaxContainedClaims(ProtectedRegion wgRegion, Set<Claim> userClaims) {
+        if (userClaims==null || userClaims.isEmpty()) return false;
+
+        int count = -1;
+        for (Claim claim : userClaims) {
+            if (isClaimContained(wgRegion, claim)) {
+                count++;
+            }
+            if (count>=MAX_CONTAINED_CLAIMS) return true;
+        }
+        return false;
     }
 }

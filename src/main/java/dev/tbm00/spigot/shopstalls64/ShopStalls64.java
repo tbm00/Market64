@@ -10,15 +10,15 @@ import dev.tbm00.spigot.rep64.Rep64;
 import dev.tbm00.spigot.shopstalls64.data.ConfigHandler;
 import dev.tbm00.spigot.shopstalls64.data.MySQLConnection;
 import dev.tbm00.spigot.shopstalls64.hook.*;
-import dev.tbm00.spigot.shopstalls64.command.*;
-import dev.tbm00.spigot.shopstalls64.listener.ShopTransaction;
 
 public class ShopStalls64 extends JavaPlugin {
     private ConfigHandler configHandler;
     private MySQLConnection mysqlConnection;
+    private ClaimHandler claimHandler;
     private StallHandler stallHandler;
     public static DSHook dsHook;
     public static GDHook gdHook;
+    public static WGHook wgHook;
     public static EcoHook ecoHook;
     public static Rep64 repHook;
 
@@ -48,15 +48,19 @@ public class ShopStalls64 extends JavaPlugin {
             );
 
             setupHooks();
+            
+
             if (configHandler.isFeatureEnabled()) {
-                stallHandler = new StallHandler(mysqlConnection, dsHook, gdHook, ecoHook);
+                stallHandler = new StallHandler(mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
+                claimHandler = new ClaimHandler(this, wgHook);
 
                 // Register Listener
-                getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);
+                //getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);
+                
                 
                 // Register Commands
-                getCommand("teststall").setExecutor(new StallCmd(stallHandler));
-                getCommand("teststalladmin").setExecutor(new AdminCmd(stallHandler));
+                //getCommand("teststall").setExecutor(new StallCmd(stallHandler));
+                //getCommand("teststalladmin").setExecutor(new AdminCmd(stallHandler));
             }
         }
     }
@@ -74,6 +78,12 @@ public class ShopStalls64 extends JavaPlugin {
 
         if (!setupGriefDefender()) {
             getLogger().severe("GriefDefender hook failed -- disabling plugin!");
+            disablePlugin();
+            return;
+        }
+
+        if (!setupWorldGuard()) {
+            getLogger().severe("WorldGuard hook failed -- disabling plugin!");
             disablePlugin();
             return;
         }
@@ -120,6 +130,20 @@ public class ShopStalls64 extends JavaPlugin {
         gdHook = new GDHook();
 
         StaticUtil.log(ChatColor.GREEN, "GriefDefender hooked.");
+        return true;
+    }
+
+    /**
+     * Attempts to hook into the WorldGuard plugin.
+     *
+     * @return true if the hook was successful, false otherwise.
+     */
+    private boolean setupWorldGuard() {
+        if (!isPluginAvailable("WorldGuard")) return false;
+
+        wgHook = new WGHook();
+
+        StaticUtil.log(ChatColor.GREEN, "WorldGuard hooked.");
         return true;
     }
 

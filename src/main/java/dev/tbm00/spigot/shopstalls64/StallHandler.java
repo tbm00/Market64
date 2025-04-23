@@ -28,20 +28,23 @@ import dev.tbm00.spigot.shopstalls64.data.StallDAO;
 import dev.tbm00.spigot.shopstalls64.hook.DSHook;
 import dev.tbm00.spigot.shopstalls64.hook.EcoHook;
 import dev.tbm00.spigot.shopstalls64.hook.GDHook;
+import dev.tbm00.spigot.shopstalls64.hook.WGHook;
 
 public class StallHandler {
     private final StallDAO dao;
     public final DSHook dsHook;
     public final GDHook gdHook;
+    public final WGHook wgHook;
     public final EcoHook ecoHook;
 
     // stored sorted in order of stalls' ids
     private final List<Stall> stalls = new ArrayList<>();
 
-    public StallHandler(MySQLConnection db, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
+    public StallHandler(MySQLConnection db, DSHook dsHook, GDHook gdHook, WGHook wgHook, EcoHook ecoHook) {
         this.dao = new StallDAO(db);
         this.dsHook = dsHook;
         this.gdHook = gdHook;
+        this.wgHook = wgHook;
         this.ecoHook = ecoHook;
         
         reloadAll();
@@ -198,6 +201,8 @@ public class StallHandler {
             return false;
         }
 
+
+        stall.setRented(true);
         Date dateBase = new Date();
         Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
