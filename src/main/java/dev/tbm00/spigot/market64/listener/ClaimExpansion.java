@@ -28,7 +28,7 @@ public class ClaimExpansion implements Listener {
             Player player = (Player) event.getSourceUser().getOnlinePlayer();
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &fYou cannot have expand a claim into our market!");
+                StaticUtil.sendMessage(player, "&4Error: &fYou cannot expand a claim into our market!");
                 event.cancelled(true);
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
