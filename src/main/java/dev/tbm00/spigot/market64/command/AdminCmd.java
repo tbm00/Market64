@@ -15,15 +15,15 @@ import dev.tbm00.spigot.market64.StaticUtil;
 import dev.tbm00.spigot.market64.StallHandler;
 
 public class AdminCmd implements TabExecutor {
-    //private final StallHandler stallHandler;
+    private final StallHandler stallHandler;
     private final String ADMIN_PERM = "market64.admin";
 
     public AdminCmd(StallHandler stallHandler) {
-        //this.stallHandler = stallHandler;
+        this.stallHandler = stallHandler;
     }
 
     /**
-     * Handles the /teststalladmin command.
+     * Handles the /stalladmin command.
      * 
      * @param player the command sender
      * @param consoleCommand the command being executed
@@ -46,6 +46,8 @@ public class AdminCmd implements TabExecutor {
         switch (subCmd) {
             case "help":
                 return handleHelpCmd(player);
+            case "info":
+                return handleInfoCmd(player);
             case "create":
                 // implement: return handleCreateCmd(player);
             case "delete":
@@ -69,17 +71,22 @@ public class AdminCmd implements TabExecutor {
      */
     private boolean handleHelpCmd(Player player) {
         player.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall Admin Commands" + ChatColor.DARK_PURPLE + " ---\n"
-            + ChatColor.WHITE + "/teststalladmin create <id> <rentalTime> <initialPrice> <renewalPrice> <world> <x,y,z> <claimUUID>" + ChatColor.GRAY + " \n"
-            + ChatColor.WHITE + "/teststalladmin delete <id>" + ChatColor.GRAY + " \n"
-            + ChatColor.WHITE + "/teststalladmin status <id>/all" + ChatColor.GRAY + " \n"
-            + ChatColor.WHITE + "/teststalladmin evict <id>" + ChatColor.GRAY + " \n"
-            + ChatColor.WHITE + "/teststalladmin dailyTask" + ChatColor.GRAY + " "
+            + ChatColor.WHITE + "/stalladmin create <id> <rentalTime> <maxPlaytime> <initialPrice> <renewalPrice> <world> <x,y,z> <claimUUID>" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/stalladmin delete <id>" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/stalladmin status <id>/all" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/stalladmin evict <id>" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/stalladmin dailyTask" + ChatColor.GRAY + " "
         );
         return true;
     }
 
+    private boolean handleInfoCmd(Player player) {
+        stallHandler.getShopInfo(player);
+        return true;
+    }
+
     /**
-     * Handles tab completion for the /teststalladmin command.
+     * Handles tab completion for the /stalladmin command.
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {

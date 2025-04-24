@@ -129,13 +129,6 @@
             <systemPath>${project.basedir}/depend/DisplayShops-2_1_2.jar</systemPath>
         </dependency>
         <dependency>
-            <groupId>dev.tbm00</groupId>
-            <artifactId>Rep64</artifactId>
-            <version>1.2.3</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/depend/Rep64-1_2_3.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>dev.triumphteam</groupId>
             <artifactId>triumph-gui</artifactId>
             <version>3.1.11</version>
@@ -144,6 +137,12 @@
             <groupId>net.wesjd</groupId>
             <artifactId>anvilgui</artifactId>
             <version>1.10.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

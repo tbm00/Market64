@@ -65,18 +65,19 @@ public class MySQLConnection {
 
     private void initializeDatabase() {
         String playerTable = "CREATE TABLE IF NOT EXISTS market64_shop (" +
-                "id INT PRIMARY KEY, " +
-                "claim_uuid VARCHAR(36) , " +
-                "world TEXT, " +
-                "storage_coords TEXT, " +
-                "initial_price DOUBLE, " +
-                "renewal_price DOUBLE, " +
-                "rental_time INT, " +
-                "rented BOOLEAN, " +
+                "id INT PRIMARY KEY NOT NULL, " +
+                "claim_uuid VARCHAR(36) NOT NULL, " +
+                "world TEXT NOT NULL, " +
+                "storage_coords TEXT NOT NULL, " +
+                "initial_price DOUBLE NOT NULL, " +
+                "renewal_price DOUBLE NOT NULL, " +
+                "rental_time INT NOT NULL, " +
+                "max_play_time INT NOT NULL, " +
+                "rented BOOLEAN NOT NULL, " +
                 "renter_uuid VARCHAR(36), " +
                 "renter_name VARCHAR(20), " +
                 "eviction_date TIMESTAMP, " +
-                "last_transaction_date TIMESTAMP)";
+                "last_transaction_date TIMESTAMP);";
 
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {

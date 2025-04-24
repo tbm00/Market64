@@ -20,11 +20,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
+import net.md_5.bungee.api.chat.TextComponent;
+
 import com.griefdefender.api.claim.Claim;
 import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
-
-import net.md_5.bungee.api.chat.TextComponent;
 
 import dev.tbm00.spigot.market64.data.ConfigHandler;
 
@@ -122,6 +122,17 @@ public class StaticUtil {
     }
 
     /**
+     * Sends an Essentials mail message to a target OfflinePlayer.
+     * 
+     * @param target the OfflinePlayer to send the message to
+     * @param string the message to send
+     */
+    public static void sendMail(OfflinePlayer target, String string) {
+        if (!string.isBlank())
+            runCommand("mail send "+target.getName()+" "+string);
+    }
+
+    /**
      * Gives a player an ItemStack.
      * If they have a full inv, it drops on the ground.
      * 
@@ -141,7 +152,7 @@ public class StaticUtil {
      * @param items the list of ItemStack objects to store in the shulker box; items are removed as they are added
      * @return the created shulker box ItemStack
      */
-    public ItemStack createShulkerBox(String name, List<ItemStack> items) {
+    public static ItemStack createShulkerBox(String name, List<ItemStack> items) {
         ItemStack shulker = new ItemStack(Material.SHULKER_BOX);
         BlockStateMeta meta = (BlockStateMeta) shulker.getItemMeta();
         if (meta == null) return shulker;

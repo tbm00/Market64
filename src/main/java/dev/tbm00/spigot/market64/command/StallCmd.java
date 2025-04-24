@@ -25,7 +25,7 @@ public class StallCmd implements TabExecutor {
     }
 
     /**
-     * Handles the /teststall command.
+     * Handles the /stall command.
      * 
      * @param player the command sender
      * @param consoleCommand the command being executed
@@ -71,15 +71,15 @@ public class StallCmd implements TabExecutor {
      */
     private boolean handleHelpCmd(Player player) {
         player.sendMessage(ChatColor.DARK_AQUA + "--- " + ChatColor.AQUA + "Stall Commands" + ChatColor.DARK_AQUA + " ---\n"
-            + ChatColor.WHITE + "/teststall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automaticaly if you have enough money in your pocket\n"
-            + ChatColor.WHITE + "/teststall renew [id]" + ChatColor.GRAY + " Renew your stall early, if [id] is not null, it will abandon your only stall\n"
-            + ChatColor.WHITE + "/teststall abandon [id]" + ChatColor.GRAY + " Abandon your stall, if [id] is not null, it will abandon your only stall\n"
+            + ChatColor.WHITE + "/stall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automaticaly if you have enough money in your pocket\n"
+            + ChatColor.WHITE + "/stall renew [id]" + ChatColor.GRAY + " Renew your stall early, if [id] is not null, it will abandon your only stall\n"
+            + ChatColor.WHITE + "/stall abandon [id]" + ChatColor.GRAY + " Abandon your stall, if [id] is not null, it will abandon your only stall\n"
         );
         return true;
     }
 
     /**
-     * Handles tab completion for the /teststall command.
+     * Handles tab completion for the /stall command.
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {

@@ -7,8 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -36,23 +38,26 @@ public class StallDAO {
             initial_price,
             renewal_price,
             rental_time,
+            max_play_time,
             rented,
             renter_uuid,
             renter_name,
             eviction_date,
             last_transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE_SQL = """
         UPDATE market64_shop
         SET
+            id = ?,
             claim_uuid = ?,
             world = ?,
             storage_coords = ?,
             initial_price = ?,
             renewal_price = ?,
             rental_time = ?,
+            max_play_time = ?,
             rented = ?,
             renter_uuid = ?,
             renter_name = ?,
@@ -112,7 +117,7 @@ public class StallDAO {
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
                 prepareStatement(ps, s);
-                ps.setInt(12, s.getId());
+                ps.setInt(14, s.getId());
                 return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             StaticUtil.log(ChatColor.RED, "Error updating stall: " + e.getMessage());
@@ -139,6 +144,7 @@ public class StallDAO {
         double initialPrice = rs.getDouble("initial_price");
         double renewalPrice  = rs.getDouble("renewal_price");
         int rentalTime  = rs.getInt("rental_time");
+        int maxPlayTime  = rs.getInt("max_play_time");
         boolean rented = rs.getBoolean("rented");
         String ru = rs.getString("renter_uuid");
         UUID renterUuid = ru != null ? UUID.fromString(ru) : null;
@@ -146,8 +152,8 @@ public class StallDAO {
         java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
-        return new Stall(id, claimUuid, null, null, null, world, coords, initialPrice, renewalPrice,
-                        rentalTime, rented, renterUuid, renterName, eviction, lastTransaction);
+        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, coords, initialPrice, renewalPrice,
+                        rentalTime, maxPlayTime, rented, renterUuid, renterName, eviction, lastTransaction);
     }
 
     private void prepareStatement(PreparedStatement ps, Stall s) throws SQLException {
@@ -157,12 +163,13 @@ public class StallDAO {
         ps.setString(4, joinCoords(s.getStorageCoords()));
         ps.setDouble(5, s.getInitialPrice());
         ps.setDouble(6, s.getRenewalPrice());
-        ps.setDouble(7, s.getRentalTime());
-        ps.setBoolean(8, s.isRented());
-        ps.setString(9, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
-        ps.setString(10, s.getRenterName());
-        ps.setTimestamp(11, toSqlTimestamp(s.getEvictionDate()));
-        ps.setTimestamp(12, toSqlTimestamp(s.getLastTransaction()));
+        ps.setInt(7, s.getRentalTimeDays());
+        ps.setInt(8, s.getPlayTimeDays());
+        ps.setBoolean(9, s.isRented());
+        ps.setString(10, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
+        ps.setString(11, s.getRenterName());
+        ps.setTimestamp(12, toSqlTimestamp(s.getEvictionDate()));
+        ps.setTimestamp(13, toSqlTimestamp(s.getLastTransaction()));
     }
 
     private int[] parseCoords(String data) {

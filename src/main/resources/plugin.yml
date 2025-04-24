@@ -6,9 +6,9 @@ main: dev.tbm00.spigot.market64.Market64
 api-version: 1.17
 depend: [DisplayShops, GriefDefender, Vault, Rep64]
 commands:
-  teststall:
+  stall:
     description: Main command for Market64
-  teststalladmin:
+  stalladmin:
     description: Admin commands for Market64
 permissions:
   market64.player:

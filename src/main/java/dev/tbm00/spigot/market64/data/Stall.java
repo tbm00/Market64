@@ -22,13 +22,14 @@ public class Stall {
     private int[] storageCoords; // x,y,z
     private Double initialPrice;
     private Double renewalPrice;
-    private int rentalTime; 
+    private int rentalTimeDays; 
+    private int playTimeDays; 
     private boolean rented;
     private UUID renterUuid;
     private String renterName;
     private Date evictionDate;
     private Date lastTransaction;
-
+    
     /**
      * Constructs a Stall with all properties initialized.
      *
@@ -40,7 +41,8 @@ public class Stall {
      * @param storageCoords coordinates (x, y, z) for expired goods storage
      * @param initialPrice initial rental price
      * @param renewalPrice renewal rental price
-     * @param rentalTime time in days the lease lasts
+     * @param rentalTimeDays time in days the lease lasts
+     * @param playTimeDays max amount of playtime a player can have while renting
      * @param rented whether the stall is currently rented
      * @param renterUuid UUID of the renter
      * @param renterName name of the renter
@@ -56,7 +58,8 @@ public class Stall {
                  int[] storageCoords,
                  Double initialPrice,
                  Double renewalPrice,
-                 int rentalTime,
+                 int rentalTimeDays,
+                 int playTimeDays,
                  boolean rented,
                  UUID renterUuid,
                  String renterName,
@@ -71,7 +74,8 @@ public class Stall {
         this.storageCoords = storageCoords;
         this.initialPrice = initialPrice;
         this.renewalPrice = renewalPrice;
-        this.rentalTime = rentalTime;
+        this.rentalTimeDays = rentalTimeDays;
+        this.playTimeDays = playTimeDays;
         this.rented = rented;
         this.renterUuid = renterUuid;
         this.renterName = renterName;
@@ -169,12 +173,21 @@ public class Stall {
     }
 
     /** @return the time in days the lease lasts */
-    public int getRentalTime() {
-        return rentalTime;
+    public int getRentalTimeDays() {
+        return rentalTimeDays;
     }
     /** @param rentalTime the time in days to set */
-    public void setRentalTime(int rentalTime) {
-        this.rentalTime = rentalTime;
+    public void setRentalTimeDays(int rentalTimeDays) {
+        this.rentalTimeDays = rentalTimeDays;
+    }
+    
+    /** @return the max time in days allowed for renters to have */
+    public int getPlayTimeDays() {
+        return playTimeDays;
+    }
+    /** @param rentalTime the time in days to set */
+    public void setPlayTimeDays(int playTimeDays) {
+        this.playTimeDays = playTimeDays;
     }
     
     /** @return whether the stall is rented */

@@ -1,5 +1,6 @@
 package dev.tbm00.spigot.market64;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -13,9 +14,17 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
+import org.bukkit.block.Barrel;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import com.griefdefender.api.claim.Claim;
 
@@ -91,9 +100,8 @@ public class StallHandler {
      * Process (in order): 
      *  - Get the active claim using the world and uuid
      *  - Get the active contained shops using the claim's 3d corner blocks
-     * 
      *  - Sets each shop's data:
-     *      - Sets shop owner to all `ffffff`
+     *      - Sets shop owner to null
      *      - Clears shop manager's
      *      - Sets shop limits to null
      *      - Sets shop itemstack to null
@@ -101,10 +109,8 @@ public class StallHandler {
      *      - Sets shop stackSize to 1
      *      - Sets stored balance to 0
      *      - Sets stored stock to 0
-     * 
-     *  - Creates internal Stall object with relavant attributes and "empty" renter name, placed in arraylist at the id index
+     *  - Creates internal Stall object, placed at the IDth index
      *  - Adds Stall entry to SQL database
-     * 
      *  - Returns true on success, false when there was an error
      * @param stallId int
      * @param rentalTime int
@@ -115,7 +121,7 @@ public class StallHandler {
      * @param claimUuid UUID
      * @returns true on success, false if error
      */
-    public boolean createStall(int stallId, int rentalTime, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
+    public boolean createStall(int stallId, int rentalTime, int maxPlayTime, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
 
@@ -142,7 +148,7 @@ public class StallHandler {
         }
         
         Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, coords, initialPrice, renewalPrice,
-                                    rentalTime, false, null, null, null, null);
+                                    rentalTime, maxPlayTime, false, null, null, null, null);
             
         if (!dao.insert(newStall)) return false;
         ensureCapacity(stallId);
@@ -151,36 +157,18 @@ public class StallHandler {
     }
 
     /**
-     * @param stallId int
-     * @returns true on success, false if error
-     */
-    public boolean deleteStall(int stallId) {
-        if (!dao.delete(stallId)) return false;
-        if (stallId >= 0 && stallId < stalls.size()) {
-            stalls.set(stallId, null);
-        }
-        return true;
-    }
-
-    /**
      * Process (in order): 
      *  - Charges the player the initial price
-     * 
      *  - Resets the each shop's data:
      *      - Sets shop owner to player.getUniqueId()
      *      - Sets shop buyPrice to 960 and sellPrice to 360
-     * 
-     *  - Adds player to claim's trustlist
-     * 
      *  - Sets stalls' 'rented' attribute to true
      *  - Sets stalls' eviction date to 7 days from the present
-     * 
-     *  - Updates internal Stall object & other attributes accordingly
+     *  - Updates internal Stall object
      *  - Updates Stall entry in SQL database
-     *  
      * @returns true on success, false if error
      */
-    public boolean rentStall(int stallId, Player player) {
+    public boolean fillStall(int stallId, Player player) {
         Stall stall = getStall(stallId);
 
         if (stall == null) {
@@ -201,10 +189,24 @@ public class StallHandler {
             return false;
         }
 
+        for (Shop shop : stall.getShopMap().values()) {
+            // Pre-log
+            logShop(shop, ChatColor.YELLOW, shop.getStock(), -1, -1);
+
+            shop.setOwnerUniqueId(player.getUniqueId());
+            shop.setBuyPrice(960);
+            shop.setSellPrice(360);
+
+            // Post-log
+            logShop(shop, ChatColor.GREEN, shop.getStock(), -1, -1);
+        }
 
         stall.setRented(true);
+        stall.setRenterName(player.getName());
+        stall.setRenterUuid(player.getUniqueId());
+        stall.setLastTransaction(null);
         Date dateBase = new Date();
-        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
         return dao.update(stall);
@@ -213,151 +215,261 @@ public class StallHandler {
     /**
      * Process (in order): 
      *  - Charges the player the renewal price
-     * 
      *  - Increases stalls' eviction date by 7 days
-     * 
-     *  - Updates internal Stall object & other attributes accordingly
+     *  - Updates internal Stall object
      *  - Updates Stall entry in SQL database
-     *  
      *  - Returns true on success, false when there was an error
      */
-    public boolean renewStall(int stallId, Player player) {
+    public boolean renewStall(int stallId, boolean auto) {
         Stall stall = getStall(stallId);
-
         if (stall == null) {
-            StaticUtil.sendMessage(player, "&cCould not find stall!");
+            StaticUtil.log(ChatColor.RED, "&cCould not find stall!");
             return false;
-        } else if (!stall.isRented()) {
-            StaticUtil.sendMessage(player, "&cThis stall is not currently rented!");
+        }
+
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+        Player player = offlinePlayer.getPlayer();
+        if (!auto && player==null) {
+            StaticUtil.log(ChatColor.RED, "Could not find online player by stall.getRenterUuid!");
             return false;
-        } else if (!player.getUniqueId().equals(stall.getRenterUuid())) {
-            StaticUtil.sendMessage(player, "&cThis stall is not yours!");
+        }
+
+        if (!stall.isRented()) {
+            if (!auto) StaticUtil.sendMessage(player, "&cThis stall is not currently rented!");
             return false;
-        } 
+        } else if (!offlinePlayer.getUniqueId().equals(stall.getRenterUuid())) {
+            if (!auto) StaticUtil.sendMessage(player, "&cThis stall is not yours!");
+            return false;
+        }
         
         double price = stall.getRenewalPrice();
 
-        if (!ecoHook.hasMoney(player, price)) {
-            StaticUtil.sendMessage(player, "&cYou don't have enough money!");
+        if (!ecoHook.hasMoney(offlinePlayer, price)) {
+            if (!auto) StaticUtil.sendMessage(player, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
+            else StaticUtil.sendMail(offlinePlayer, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
             return false;
-        } else if (!ecoHook.removeMoney(player, price)) {
-            StaticUtil.sendMessage(player, "&cError when charging you!");
-            return false;
+        } else if (!ecoHook.removeMoney(offlinePlayer, price)) {
+            StaticUtil.log(ChatColor.RED, "Error when charging "+offlinePlayer.getName()+" to renew their stall #"+stall.getId());
+            return true;
         }
 
         Date dateBase = stall.getEvictionDate() != null ? 
                         stall.getEvictionDate() : new Date();
 
-        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
-        StaticUtil.sendMessage(player, "&aRenewed your stall; ");
-
+        if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
+        else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
         return dao.update(stall);
     }
 
     /**
      * Process (in order): 
-     *  - Charges the player the renewal price
+     *  - Resets each shop's data:
+     *      - Transfers stored balance to player
+     *      - Saves stored itemstacks to be transfered at the end of the method
+     *      - Sets shop owner to null
+     *      - Clears shop attributes
+     *          - Sets shop owner to null
+     *          - Sets shop limits to null
+     *          - Sets shop itemstack to null
+     *          - Sets shop buyPrice and sellPrice to -1
+     *          - Sets shop stackSize to 1
+     *          - etc.
+     *  - Creates SHULKER itemstack(s) named "Stall #<stallId> - <renterName> - <currentDate> - #<shulkerIndex>"
+     *  - Moves saved itemstacks into the shulker(s)
+     *  - Moves saved shulker(s)
+     *      - into the player's inventory if they're online and they have enough inventory space
+     *      - into the stall's storage location if they're not online or they dont have enough inventory space
+     *          - if the storage location is not a barrel, create a barrel at the location
+     *          - if the storage barrel doesn't have space, create a new barrel object 1 block below it, and store it in there, then update the storage block location
+     *  - Creates PAPER itemstack named "Stall #<stallId> - <renterName> - <currentDate>"
+     *      - Adds lore to PAPER itemstack: "Stall: <stallId>"
+     *      - Adds lore to PAPER itemstack: "Renter: <renterName>"
+     *      - Adds lore to PAPER itemstack: "Date: <currentDate>" 
+     *      - Adds lore to PAPER itemstack: "Reason: <reason>"
+     *      - Adds lore to PAPER itemstack: "Money: <moneyTransferred>"
+     *      - Adds lore to PAPER itemstack: "Last Payment: <lastPaymentDate>"
+     *      - Adds lore to PAPER itemstack: "Items: <numberOfShulkers>, <toInv or toStallStorage>"
+     *  - Puts PAPER itemstack itemstacks in the stall's storage location
+     *      - if the storage location is not a barrel, create a barrel at the location
+     *      - if the storage barrel doesn't have space, create a new barrel object 1 block below it, and store it in there, then update the storage block location
      * 
-     *  - Increases stalls' eviction date by 7 days
+     *  - Sets stalls' 'rented' attribute to false
      * 
      *  - Updates internal Stall object & other attributes accordingly
      *  - Updates Stall entry in SQL database
      *  
      *  - Returns true on success, false when there was an error
      */
-    public boolean renewStall(int stallId, OfflinePlayer player) {
+    public boolean clearStall(int stallId, String reason, boolean auto) {
         Stall stall = getStall(stallId);
+        if (stall == null) {
+            StaticUtil.log(ChatColor.RED, "&cCould not find stall!");
+            return false;
+        }
+    
+        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+        Player player = offlinePlayer.getPlayer();
+        if (!auto && player==null) {
+            StaticUtil.log(ChatColor.RED, "Could not find online player by stall.getRenterUuid!");
+            return false;
+        }
 
-        if (stall == null || !stall.isRented() || !player.getUniqueId().equals(stall.getRenterUuid())) return false;
-        
-        double price = stall.getRenewalPrice();
-        
-        if (!ecoHook.hasMoney(player, price)) return false;
-        if (!ecoHook.removeMoney(player, price)) return false;
+        // Capture shops' stored contents and reset data
+        double totalRefund = 0;
+        List<ItemStack> itemsFromShops = new ArrayList<>();
+        for (Shop shop : stall.getShopMap().values()) {
+            int stock = shop.getStock();
+            int stacks = stock/64, leftovers = stock%64;
 
-        Date dateBase = stall.getEvictionDate() != null ? 
-                        stall.getEvictionDate() : new Date();
+            // Pre-log
+            logShop(shop, ChatColor.YELLOW, stock, stacks, leftovers);
 
-        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTime(), ChronoUnit.DAYS);
-        stall.setEvictionDate(Date.from(newExpiry));
+            // Capture & reset stored stock
+            ItemStack prototype = shop.getShopItem();
+            if (prototype!=null) {
+                for (int i = 0; i<stacks; i++) {
+                    ItemStack batch = prototype.clone();
+                    batch.setAmount(64);
+                    itemsFromShops.add(batch);
+                }
+                if (leftovers>0) {
+                    ItemStack batch = prototype.clone();
+                    batch.setAmount(leftovers);
+                    itemsFromShops.add(batch);
+                }
+            }
 
-        return dao.update(stall);
+            // Refund & reset stored balance
+            double storedBal = shop.getStoredBalance();
+            totalRefund += storedBal;
+            if (ecoHook.giveMoney(offlinePlayer, storedBal)) {
+                shop.setStoredBalance(0);
+            } else shop.returnBalance();
+
+            // Reset other shop data
+            shop.setStock(0);
+            shop.setShopItemAmount(1);
+            shop.setShopItem(null);
+            shop.setGlobalBuyLimit(-1);
+            shop.setGlobalSellLimit(-1);
+            shop.setGlobalBuyCounter(-1);
+            shop.setGlobalSellCounter(-1);
+            shop.setPlayerBuyLimit(-1);
+            shop.setPlayerSellLimit(-1);
+            shop.setBuyPrice(-1);
+            shop.setSellPrice(-1);
+            shop.setOwnerUniqueId(null);
+            shop.reset(); // catch-all
+
+            // Post-log
+            logShop(shop, ChatColor.GREEN, stock, stacks, leftovers);
+        }
+
+        // Create shulker and deliever them
+        int boxIndex = 1;
+        List<ItemStack> shulkerBoxes = new ArrayList<>();
+        String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        while (!itemsFromShops.isEmpty()) {
+            String name = String.format("Stall #%d - %s - %s - #%d", stallId, stall.getRenterName(), dateStr, boxIndex++);
+            ItemStack shulker = StaticUtil.createShulkerBox(name, itemsFromShops);
+            shulkerBoxes.add(shulker);
+        }
+        boolean toInv = false, toStallStorage = false;
+        for (ItemStack box : shulkerBoxes) {
+            if (player!=null && player.getInventory().firstEmpty() != -1) {
+                player.getInventory().addItem(box);
+                toInv = true;
+            } else {
+                addToBarrel(stall, box);
+                toStallStorage = true;
+            }
+        }
+
+        ItemStack paper = new ItemStack(Material.PAPER);
+        ItemMeta pm = paper.getItemMeta();
+        String name = String.format("Stall #%d - %s - %s", stallId, stall.getRenterName(), dateStr);
+        pm.setDisplayName(name);
+        List<String> lore = new ArrayList<>();
+        lore.add("&7Stall: " + stallId);
+        lore.add("&7Renter: " + stall.getRenterName());
+        lore.add("&7Date: " + dateStr);
+        lore.add("&7Reason: " + reason);
+        lore.add("&7Money: $" + StaticUtil.formatInt(totalRefund));
+        if (toInv && toStallStorage)
+            lore.add("&7Boxes: " + shulkerBoxes.size() + " to player's inv & stall's storage");
+        else if (toInv)
+            lore.add("&7Boxes: " + shulkerBoxes.size() + " to player's inv");
+        else if (toStallStorage)
+            lore.add("&7Boxes: " + shulkerBoxes.size() + " to stall's storage");
+        else lore.add("&7Boxes: " + shulkerBoxes.size() + " to null inv");
+        pm.setLore(lore);
+        paper.setItemMeta(pm);
+
+        addToBarrel(stall, paper);
+
+        stall.setRented(false);
+        stall.setEvictionDate(null);
+        stall.setLastTransaction(null);
+        stall.setRenterName(null);
+        stall.setRenterUuid(null);
+        dao.update(stall);
+
+        if (!auto) {
+            if (toInv && toStallStorage)
+                StaticUtil.sendMessage(player, "&fYour stall was vacated, money was returned, and items returned to your inventory..! (there were some items that didn't fit in your inventory, ask staff for help getting them back)");
+            else if (toStallStorage)
+                StaticUtil.sendMessage(player, "&fYour stall was vacated and money was returned. Your items didn't fit in your inventory, ask staff for help getting them back.");
+            else if (toInv)
+                StaticUtil.sendMessage(player, "&fYour stall was vacated, money was returned, and items returned to your inventory..!");
+            else StaticUtil.sendMessage(player, "&fYour stall was vacated and money was returned!");
+        } else {
+            if (toInv && toStallStorage)
+                StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated, money was returned, and items returned to your inventory..! (there were some items that didn't fit in your inventory, ask staff for help getting them back)");
+            else if (toStallStorage)
+                StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated and money was returned. Your items didn't fit in your inventory, ask staff for help getting them back.");
+            else if (toInv)
+                StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated, money was returned, and items returned to your inventory..!");
+            else StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated and money was returned!");
+        } 
+        return true;
+    }
+
+    private void addToBarrel(Stall stall, ItemStack item) {
+        Block storageBlock = stall.getWorld().getBlockAt(stall.getStorageCoords()[0], stall.getStorageCoords()[1], stall.getStorageCoords()[2]);
+        if (storageBlock.getType() != Material.BARREL) {
+            storageBlock.setType(Material.BARREL);
+        }
+
+        Barrel barrel = (Barrel) storageBlock.getState();
+        Inventory inv = barrel.getInventory();
+        if (inv.firstEmpty() != -1) {
+            inv.addItem(item);
+            barrel.update();
+        } else {
+            storageBlock = storageBlock.getRelative(BlockFace.DOWN);
+            storageBlock.setType(Material.BARREL);
+            barrel = (Barrel) storageBlock.getState();
+            barrel.getInventory().addItem(item);
+            barrel.update();
+            int[] coords = {stall.getStorageCoords()[0], stall.getStorageCoords()[1]-1, stall.getStorageCoords()[2]};
+            stall.setStorageCoords(coords);
+            dao.update(stall);
+        }
     }
 
     /**
-     * Process (in order): 
-     *  - Creates PAPER itemstack named "Stall #<stallId> Eviction"
-     *  - Adds lore to PAPER itemstack: "Renter: <renter's name>"
-     *  - Adds lore to PAPER itemstack: "Reason: <reason>" 
-     *  - Adds lore to PAPER itemstack: "Date: <eviction date (i.e. current date)>" 
-     *  - Adds lore to PAPER itemstack: "Last Payment: <lastPaymentDate>" 
-     *  - Clears stored balance ($) from each of the stall's shops, temporarily stores total cleared as double moneyCleared
-     *  - Adds lore to PAPER itemstack: "Money: <moneyCleared>"
-     *  - Creates SHULKER itemstack(s) named "Stall #<stallId> Eviction Stock #<shulkerId>"
-     *  - Adds lore to SHULKER itemstack: "Renter: <renter's name>"
-     *  - Adds lore to SHULKER itemstack: "Date: <eviction date (i.e. current date)>" 
-     *  - Moves stored stock from stall's shops into shulker(s), temporarily stores total created as int totalCleared
-     *  - Stores the SHULKER into the barrel at the Stall's storageCoords (if it doesnt exist, create it, if its full create new barrel 1 block below)
-     *  - Adds lore to PAPER itemstack: "Shulkers: <totalCleared>"
-     *  - Stores the PAPER into the barrel at the Stall's storageCoords (if it doesnt exist, create it, if its full create new barrel 1 block below)
-     *  - Confirms each shop's balance and stock was successfully cleared from the Shop object
-     * 
-     *  - Resets each shop's data:
-     *      - Sets shop owner to all `ffffff`
-     *      - Clears shop manager's
-     *      - Sets shop limits to null
-     *      - Sets shop itemstack to null
-     *      - Sets shop buyPrice and sellPrice to -1
-     *      - Sets shop stackSize to 1
-     *      - Sets stored balance to 0
-     *      - Sets stored stock to 0
-     * 
-     *  - Removes all trusted members from the claim
-     * 
-     *  - Sets stalls' 'rented' attribute to false
-     * 
-     *  - Updates internal Stall object & other attributes accordingly
-     *  - Updates Stall entry in SQL database
-     *  
-     *  - Returns true on success, false when there was an error
+     * @param stallId int
+     * @returns true on success, false if error
      */
-    public boolean evictStall(int stallId, String reason) {
-        return false;
-    }
-
-    /**
-     * Process (in order): 
-     *  - Clears stored balance ($) from each of the stall's shops and sends total to player's vault balance
-     *  - Creates SHULKER itemstack(s) named "Stall #<stallId> Abandoned Stock #<shulkerId>"
-     *  - Adds lore to SHULKER itemstack: "Renter: <renter's name>"
-     *  - Adds lore to SHULKER itemstack: "Date: <abandon date (i.e. current date)>" 
-     *  - Moves stored stock from stall's shops into shulker(s), temporarily stores total created as int totalCleared
-     *  - Stores the SHULKER into player's inventory
-     *  - Confirms each shop's balance and stock was successfully cleared from the Shop object
-     * 
-     *  - Resets each shop's data:
-     *      - Sets shop owner to all `ffffff`
-     *      - Clears shop manager's
-     *      - Sets shop limits to null
-     *      - Sets shop itemstack to null
-     *      - Sets shop buyPrice and sellPrice to -1
-     *      - Sets shop stackSize to 1
-     *      - Sets stored balance to 0
-     *      - Sets stored stock to 0
-     * 
-     *  - Removes all trusted members from the claim
-     * 
-     *  - Sets stalls' 'rented' attribute to false
-     * 
-     *  - Updates internal Stall object & other attributes accordingly
-     *  - Updates Stall entry in SQL database
-     *  
-     *  - Returns true on success, false when there was an error
-     */
-    public boolean abandonStall(int stallId, Player player) {
-        return false;
+    public boolean deleteStall(int stallId) {
+        if (!dao.delete(stallId)) return false;
+        if (stallId >= 0 && stallId < stalls.size()) {
+            stalls.set(stallId, null);
+        }
+        return true;
     }
 
     /**
@@ -367,12 +479,71 @@ public class StallHandler {
      *        - If that fails (ie they don't have enough money), evict the stall
      *     - If the renewal date hasn't passed, check if the stall has had a transaction in the last week (using last transaction date)
      *        - If it has been a week since the transaction date, evict the stall
-     *        - If it hasn'tbeen a week since the transaction date, check if the player has more than 3 weeks of playtime
-     *           - If renter has more than 3 weeks of playtime, evict the stall
-     * Then returns the amount of shops that were evicted
+     *        - If it hasn'tbeen a week since the transaction date, check if the player has more than X weeks of playtime
+     *           - If renter has more than X weeks of playtime, evict the stall
      */
-    public int dailyTask() {
-        return 0;
+    public void dailyTask() {
+        for (Stall stall : stalls) {
+            if (stall==null) continue;
+            if (!stall.isRented()) continue;
+
+            int id = stall.getId();
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+
+            Date lastTransaction = stall.getLastTransaction();
+
+            Date dateBase = new Date();
+            Instant sinceDate = dateBase.toInstant().minus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
+
+            if (lastTransaction!=null && lastTransaction.before(Date.from(sinceDate))) {
+                clearStall(id, "no sales", true);
+                StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for "+stall.getRentalTimeDays()+" days!");
+                continue;
+            }
+
+            if (StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
+                clearStall(id, "max playtime", true);
+                StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
+                continue;
+            }
+
+            Date evictionDate = stall.getEvictionDate();
+            if (evictionDate==null) {
+                Instant newExpiry = (new Date()).toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
+                stall.setEvictionDate(Date.from(newExpiry));
+                dao.update(stall);
+                continue;
+            } else if ((new Date()).after(evictionDate)) {
+                if (!renewStall(id, true)) {
+                    clearStall(id, "missed payment", true);
+                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment! (funds were not in your pocket)");
+                    continue;
+                }
+            }
+        }
+    }
+
+    public boolean getShopInfo(Player player) {
+        List<Shop> shops = dsHook.pl.getManager().getPlayerShops(player);
+        for (Shop shop : shops) {
+            int stock = shop.getStock();
+            int stacks = stock/64, leftovers = stock%64;
+
+            logShop(shop, ChatColor.WHITE, stock, stacks, leftovers);
+        } 
+        return true;
+    }
+
+    private void logShop(Shop shop, ChatColor color, int stock, int stacks, int leftovers) {
+        StaticUtil.log(color, "Stored Stock: "+stock+", "+stacks+" stacks "+leftovers+" leftover, Stack Size: "+shop.getShopItemAmount());
+        StaticUtil.log(color, "Stored Money: "+shop.getStoredBalance()+", B:"+shop.getBuyPrice(false)+" S:"+shop.getSellPrice(false));
+        StaticUtil.log(color, "Limits: GB:"+shop.getGlobalBuyLimit()+" GS:"+shop.getGlobalSellLimit()+" PB:"+shop.getPlayerBuyLimit()+" PS:"+shop.getPlayerSellLimit());
+        StaticUtil.log(color, "Counts: GB:"+shop.getGlobalBuyCounter()+" GS:"+shop.getGlobalSellCounter());
+        StaticUtil.log(color, "Owner: "+Bukkit.getOfflinePlayer(shop.getOwnerUniqueId()).getName());
+        StaticUtil.log(color, "Assistants: ");
+        for (UUID uuid : shop.getAssistants()) {
+            StaticUtil.log(color, "* "+Bukkit.getOfflinePlayer(uuid).getName());
+        } StaticUtil.log(color, "-");
     }
 
     /** Get a stall by ID (from cache or from DB if absent). */
