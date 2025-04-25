@@ -49,7 +49,7 @@ public class Market64 extends JavaPlugin {
 
             if (configHandler.isFeatureEnabled()) {
                 stallHandler = new StallHandler(mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
-                new ClaimHandler(this, wgHook);
+                //new ClaimHandler(this, wgHook);
 
                 // Register Listener
                 //getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);

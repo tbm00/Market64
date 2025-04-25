@@ -121,14 +121,14 @@ public class StallHandler {
      * @param claimUuid UUID
      * @returns true on success, false if error
      */
-    public boolean createStall(int stallId, int rentalTime, int maxPlayTime, double initialPrice, double renewalPrice, String worldName, String storageLoc, UUID claimUuid) {
+    public boolean createStall(int stallId, int rentalTime, int maxPlayTime, double initialPrice, double renewalPrice, String worldName, Block sign, String storageLoc, UUID claimUuid) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
 
         Claim claim = gdHook.getClaimByUuid(world, claimUuid);
         if (claim == null) return false;
 
-        int[] coords = Arrays.stream(storageLoc.split(","))
+        int[] storageCoords = Arrays.stream(storageLoc.split(","))
                              .mapToInt(Integer::parseInt)
                              .toArray();
 
@@ -147,7 +147,7 @@ public class StallHandler {
             }
         }
         
-        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, coords, initialPrice, renewalPrice,
+        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, sign, storageCoords, initialPrice, renewalPrice,
                                     rentalTime, maxPlayTime, false, null, null, null, null);
             
         if (!dao.insert(newStall)) return false;

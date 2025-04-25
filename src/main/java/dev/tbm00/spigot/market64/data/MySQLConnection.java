@@ -68,6 +68,7 @@ public class MySQLConnection {
                 "id INT PRIMARY KEY NOT NULL, " +
                 "claim_uuid VARCHAR(36) NOT NULL, " +
                 "world TEXT NOT NULL, " +
+                "sign_coords TEXT NOT NULL, " +
                 "storage_coords TEXT NOT NULL, " +
                 "initial_price DOUBLE NOT NULL, " +
                 "renewal_price DOUBLE NOT NULL, " +

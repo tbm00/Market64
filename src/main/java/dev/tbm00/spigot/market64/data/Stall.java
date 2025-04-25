@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import com.griefdefender.api.claim.Claim;
 
@@ -18,7 +19,8 @@ public class Stall {
     private Claim claim;                                                       // not stored in mysql
     private Set<UUID> shopUuids = new HashSet<>();                             // not stored in mysql
     private ConcurrentHashMap<String, Shop> shops = new ConcurrentHashMap<>(); // not stored in mysql
-    private World world;
+    private World world; // stored in mysql as String world.getName()
+    private Block sign; // coords stored in mysql as String "x,y,z"
     private int[] storageCoords; // x,y,z
     private Double initialPrice;
     private Double renewalPrice;
@@ -38,6 +40,7 @@ public class Stall {
      * @param claim the land claim for the stall
      * @param shops Map of shops in the stall
      * @param world world where the stall resides
+     * @param sign stall's sign block
      * @param storageCoords coordinates (x, y, z) for expired goods storage
      * @param initialPrice initial rental price
      * @param renewalPrice renewal rental price
@@ -55,6 +58,7 @@ public class Stall {
                  Set<UUID> shopUuids,
                  ConcurrentHashMap<String, Shop> shops,
                  World world,
+                 Block sign,
                  int[] storageCoords,
                  Double initialPrice,
                  Double renewalPrice,
@@ -71,6 +75,7 @@ public class Stall {
         this.shopUuids = new HashSet<>(shopUuids);
         this.shops = shops;
         this.world = world;
+        this.sign = sign;
         this.storageCoords = storageCoords;
         this.initialPrice = initialPrice;
         this.renewalPrice = renewalPrice;
@@ -143,6 +148,15 @@ public class Stall {
     /** @param world the world to set */
     public void setWorld(World world) {
         this.world = world;
+    }
+
+    /** @return the stall's sign */
+    public Block getSign() {
+        return sign;
+    }
+    /** @param sign the sign block to set */
+    public void setSign(Block sign) {
+        this.sign = sign;
     }
 
     /** @return the expired goods storage location */

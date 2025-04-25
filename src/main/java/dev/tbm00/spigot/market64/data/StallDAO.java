@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
+import org.bukkit.block.Block;
 
 import dev.tbm00.spigot.market64.StaticUtil;
 
@@ -34,6 +35,7 @@ public class StallDAO {
             id,
             claim_uuid,
             world,
+            sign_coords,
             storage_coords,
             initial_price,
             renewal_price,
@@ -44,7 +46,7 @@ public class StallDAO {
             renter_name,
             eviction_date,
             last_transaction_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """;
 
     private static final String UPDATE_SQL = """
@@ -53,6 +55,7 @@ public class StallDAO {
             id = ?,
             claim_uuid = ?,
             world = ?,
+            sign_coords = ?,
             storage_coords = ?,
             initial_price = ?,
             renewal_price = ?,
@@ -117,7 +120,7 @@ public class StallDAO {
         try (Connection conn = db.getConnection();
              PreparedStatement ps = conn.prepareStatement(UPDATE_SQL)) {
                 prepareStatement(ps, s);
-                ps.setInt(14, s.getId());
+                ps.setInt(15, s.getId());
                 return ps.executeUpdate() == 1;
         } catch (SQLException e) {
             StaticUtil.log(ChatColor.RED, "Error updating stall: " + e.getMessage());
@@ -140,7 +143,8 @@ public class StallDAO {
         int id = rs.getInt("id");
         UUID claimUuid = UUID.fromString(rs.getString("claim_uuid"));
         World world = Bukkit.getWorld(rs.getString("world"));
-        int[] coords = parseCoords(rs.getString("storage_coords"));
+        Block sign = getBlockFromCoords(world, rs.getString("sign_coords"));
+        int[] storageCoords = parseCoords(rs.getString("storage_coords"));
         double initialPrice = rs.getDouble("initial_price");
         double renewalPrice  = rs.getDouble("renewal_price");
         int rentalTime  = rs.getInt("rental_time");
@@ -152,7 +156,7 @@ public class StallDAO {
         java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
-        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, coords, initialPrice, renewalPrice,
+        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, sign, storageCoords, initialPrice, renewalPrice, 
                         rentalTime, maxPlayTime, rented, renterUuid, renterName, eviction, lastTransaction);
     }
 
@@ -160,24 +164,38 @@ public class StallDAO {
         ps.setInt(1, s.getId());
         ps.setString(2, s.getClaimUuid().toString());
         ps.setString(3, s.getWorld().getName());
-        ps.setString(4, joinCoords(s.getStorageCoords()));
-        ps.setDouble(5, s.getInitialPrice());
-        ps.setDouble(6, s.getRenewalPrice());
-        ps.setInt(7, s.getRentalTimeDays());
-        ps.setInt(8, s.getPlayTimeDays());
-        ps.setBoolean(9, s.isRented());
-        ps.setString(10, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
-        ps.setString(11, s.getRenterName());
-        ps.setTimestamp(12, toSqlTimestamp(s.getEvictionDate()));
-        ps.setTimestamp(13, toSqlTimestamp(s.getLastTransaction()));
+        ps.setString(4, joinCoords(getCoordsFromBlock(s.getSign())));
+        ps.setString(5, joinCoords(s.getStorageCoords()));
+        ps.setDouble(6, s.getInitialPrice());
+        ps.setDouble(7, s.getRenewalPrice());
+        ps.setInt(8, s.getRentalTimeDays());
+        ps.setInt(9, s.getPlayTimeDays());
+        ps.setBoolean(10, s.isRented());
+        ps.setString(11, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
+        ps.setString(12, s.getRenterName());
+        ps.setTimestamp(13, toSqlTimestamp(s.getEvictionDate()));
+        ps.setTimestamp(14, toSqlTimestamp(s.getLastTransaction()));
     }
 
-    private int[] parseCoords(String data) {
-        if (data == null || data.isEmpty()) return new int[]{0,0,0};
-        String[] parts = data.split(",");
+    private int[] parseCoords(String coords) {
+        if (coords == null || coords.isEmpty()) return new int[]{0,0,0};
+        String[] parts = coords.split(",");
         int[] out = new int[parts.length];
         for (int i = 0; i < parts.length; i++) out[i] = Integer.parseInt(parts[i].trim());
         return out;
+    }
+
+    private int[] getCoordsFromBlock(Block block) {
+        if (block == null) return new int[]{0,0,0};
+        return new int[]{block.getX(),block.getY(),block.getZ()};
+    }
+
+    private Block getBlockFromCoords(World world, String coords) {
+        if (world==null || coords==null || coords.isEmpty()) return null;
+
+        int[] coordsArr = parseCoords(coords);
+
+        return world.getBlockAt(coordsArr[0], coordsArr[1], coordsArr[2]);
     }
 
     private String joinCoords(int[] coords) {
