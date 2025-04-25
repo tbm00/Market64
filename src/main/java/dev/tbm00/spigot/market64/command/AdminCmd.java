@@ -38,24 +38,22 @@ public class AdminCmd implements TabExecutor {
             return true;
         }
 
-        Player player = (Player) sender;
-
         if (args.length == 0) return false;
 
         String subCmd = args[0].toLowerCase();
         switch (subCmd) {
             case "help":
-                return handleHelpCmd(player);
+                return handleHelpCmd(sender);
             case "evict":
-                return handleEvictCmd(player, args);
+                return handleEvictCmd(sender, args);
             case "delete":
-                return handleDeleteCmd(player, args);
+                return handleDeleteCmd(sender, args);
             case "dailytask":
-                return handleDailyTaskCmd(player);
+                return handleDailyTaskCmd(sender);
             case "status":
-                return handleStatusCmd(player, args);
+                return handleStatusCmd(sender, args);
             case "info":
-                return handleInfoCmd(player);
+                return handleInfoCmd(sender);
             default:
                 return false;
         }
@@ -64,11 +62,11 @@ public class AdminCmd implements TabExecutor {
     /**
      * Handles the sub command for the help menu.
      * 
-     * @param player the command sender
+     * @param sender the command sender
      * @return true after displaying help menu
      */
-    private boolean handleHelpCmd(Player player) {
-        player.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall Admin Commands" + ChatColor.DARK_PURPLE + " ---\n"
+    private boolean handleHelpCmd(CommandSender sender) {
+        sender.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall Admin Commands" + ChatColor.DARK_PURPLE + " ---\n"
             + ChatColor.WHITE + "/stalladmin delete <id>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/stalladmin status <id>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/stalladmin evict <id>" + ChatColor.GRAY + " \n"
@@ -77,9 +75,9 @@ public class AdminCmd implements TabExecutor {
         return true;
     }
 
-    private boolean handleEvictCmd(Player player, String[] args) {
+    private boolean handleEvictCmd(CommandSender sender, String[] args) {
         if (args.length<1) {
-            StaticUtil.sendMessage(player, "&cYou must provide a stall ID to evict!");
+            StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to evict!");
             return false;
         } 
 
@@ -87,28 +85,28 @@ public class AdminCmd implements TabExecutor {
         try {
             id = Integer.valueOf(args[1]);
         } catch (Exception e) {
-            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+            StaticUtil.sendMessage(sender, "&cCould not parse ID '"+args[1]+"'!");
             return true;
         }
 
         if (stallHandler.clearStall(id, "staff eviction", false)) {
-            StaticUtil.sendMessage(player, "&aEvicted stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&aEvicted stall "+id+"!");
             return true;
         } else {
-            StaticUtil.sendMessage(player, "&cFailed to evict stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&cFailed to evict stall "+id+"!");
             return true;
         }
     }
 
-    private boolean handleDailyTaskCmd(Player player) {
+    private boolean handleDailyTaskCmd(CommandSender sender) {
         int count = stallHandler.dailyTask();
-        StaticUtil.sendMessage(player, "&aEvicted "+count+" stalls!");
+        StaticUtil.sendMessage(sender, "&aEvicted "+count+" stalls!");
         return true;
     }
 
-    private boolean handleDeleteCmd(Player player, String[] args) {
+    private boolean handleDeleteCmd(CommandSender sender, String[] args) {
         if (args.length<1) {
-            StaticUtil.sendMessage(player, "&cYou must provide a stall ID to delete!");
+            StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to delete!");
             return false;
         } 
 
@@ -116,22 +114,22 @@ public class AdminCmd implements TabExecutor {
         try {
             id = Integer.valueOf(args[1]);
         } catch (Exception e) {
-            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+            StaticUtil.sendMessage(sender, "&cCould not parse ID '"+args[1]+"'!");
             return true;
         }
 
         if (stallHandler.deleteStall(id)) {
-            StaticUtil.sendMessage(player, "&aDeleted stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&aDeleted stall "+id+"!");
             return true;
         } else {
-            StaticUtil.sendMessage(player, "&cFailed to delete stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&cFailed to delete stall "+id+"!");
             return true;
         }
     }
 
-    private boolean handleStatusCmd(Player player, String[] args) {
+    private boolean handleStatusCmd(CommandSender sender, String[] args) {
         if (args.length<1) {
-            StaticUtil.sendMessage(player, "&cYou must provide a stall ID to check out!");
+            StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to check out!");
             return false;
         } 
 
@@ -139,17 +137,17 @@ public class AdminCmd implements TabExecutor {
         try {
             id = Integer.valueOf(args[1]);
         } catch (Exception e) {
-            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+            StaticUtil.sendMessage(sender, "&cCould not parse ID '"+args[1]+"'!");
             return true;
         }
 
         Stall stall = stallHandler.getStall(id);
         if (stall==null) {
-            StaticUtil.sendMessage(player, "&cFailed find stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&cFailed find stall "+id+"!");
             return true;
         }
 
-        player.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall " + id + ChatColor.DARK_PURPLE + " ---\n"
+        sender.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall " + id + ChatColor.DARK_PURPLE + " ---\n"
             + ChatColor.YELLOW + "Claim: " + ChatColor.GRAY + stall.getClaimUuid().toString() + " \n"
             + ChatColor.YELLOW + "Shops: " + ChatColor.GRAY + stall.getShopMap().size() + " \n"
             + ChatColor.YELLOW + "ShopUuids: " + ChatColor.GRAY + stall.getShopUuids().size() + " \n"
@@ -170,8 +168,8 @@ public class AdminCmd implements TabExecutor {
         return true;
     }
 
-    private boolean handleInfoCmd(Player player) {
-        stallHandler.getShopInfo(player);
+    private boolean handleInfoCmd(CommandSender sender) {
+        stallHandler.getShopInfo((Player) sender);
         return true;
     }
 

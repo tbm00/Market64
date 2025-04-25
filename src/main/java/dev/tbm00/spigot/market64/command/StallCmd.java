@@ -26,7 +26,7 @@ public class StallCmd implements TabExecutor {
     /**
      * Handles the /stall command.
      * 
-     * @param player the command sender
+     * @param sender the command sender
      * @param consoleCommand the command being executed
      * @param alias the alias used for the command
      * @param args the arguments passed to the command
@@ -42,21 +42,19 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        Player player = (Player) sender;
-
         if (args.length == 0)
             return false;
 
         String subCmd = args[0].toLowerCase();
         switch (subCmd) {
             case "help":
-                return handleHelpCmd(player);
+                return handleHelpCmd(sender);
             case "rent":
-                return handleRentCmd(player, args);
+                return handleRentCmd(sender, args);
             case "renew":
-                // implement: return handleRenewCmd(player, args);
+                return handleRenewCmd(sender, args);
             case "abandon":
-                // implement: return handleAbandonCmd(player, args);
+                return handleAbandonCmd(sender, args);
             default:
                 return false;
         }
@@ -65,11 +63,11 @@ public class StallCmd implements TabExecutor {
     /**
      * Handles the sub command for the help menu.
      * 
-     * @param player the command sender
+     * @param sender the command sender
      * @return true after displaying help menu
      */
-    private boolean handleHelpCmd(Player player) {
-        player.sendMessage(ChatColor.DARK_AQUA + "--- " + ChatColor.AQUA + "Stall Commands" + ChatColor.DARK_AQUA + " ---\n"
+    private boolean handleHelpCmd(CommandSender sender) {
+        sender.sendMessage(ChatColor.DARK_AQUA + "--- " + ChatColor.AQUA + "Stall Commands" + ChatColor.DARK_AQUA + " ---\n"
             + ChatColor.WHITE + "/stalls" + ChatColor.GRAY + " Open the main Stall GUI\n"
             + ChatColor.WHITE + "/stall <id>" + ChatColor.GRAY + " Open the stall's GUI\n"
             + ChatColor.WHITE + "/stall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automaticaly if you have enough money in your pocket\n"
@@ -79,9 +77,17 @@ public class StallCmd implements TabExecutor {
         return true;
     }
 
-    private boolean handleRentCmd(Player player, String[] args) {
+    private boolean handleRentCmd(CommandSender sender, String[] args) {
+        Player player;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        } else {
+            StaticUtil.sendMessage(sender, "&cCommand must be ran by a player!");
+            return true;
+        }
+
         if (args.length<1) {
-            StaticUtil.sendMessage(player, "&cYou must provide a stall ID to rent!");
+            StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to rent!");
             return false;
         } 
 
@@ -89,18 +95,96 @@ public class StallCmd implements TabExecutor {
         try {
             id = Integer.valueOf(args[1]);
         } catch (Exception e) {
-            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+            StaticUtil.sendMessage(sender, "&cCould not parse ID '"+args[1]+"'!");
             return true;
         }
 
         if (stallHandler.fillStall(id, player)) {
             Stall stall = stallHandler.getStall(id);
-            StaticUtil.sendMessage(player, "&aRented stall "+id+"! &eYour stall will automatically renew after 7 days, as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
+            StaticUtil.sendMessage(sender, "&aRented stall "+id+"! &eYour stall will automatically renew after 7 days ("+stall.getEvictionDate()+" ), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
             return true;
         } else {
-            StaticUtil.sendMessage(player, "&aFailed to evict stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&aFailed to evict stall "+id+"!");
             return true;
         }
+    }
+
+    private boolean handleRenewCmd(CommandSender sender, String[] args) {
+        Player player;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        } else {
+            StaticUtil.sendMessage(sender, "&cCommand must be ran by a player!");
+            return true;
+        }
+
+        Integer id=null;
+        if (args.length<1) {
+            for (Stall stall : stallHandler.getStalls()) {
+                if (stall.getRenterUuid().equals(player.getUniqueId())) {
+                    id = stall.getId();
+                    break;
+                }
+            }
+            if (id==null) {
+                StaticUtil.sendMessage(player, "&cCould not find your stall, do you really have one?");
+                return true;
+            }
+        } else {
+            try {
+                id = Integer.valueOf(args[1]);
+            } catch (Exception e) {
+                StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+                return true;
+            }
+        }
+
+        if (!stallHandler.getStall(id).getRenterUuid().equals(player.getUniqueId())) {
+            StaticUtil.sendMessage(player, "&cStall "+ id +"is not yours!");
+            return true;
+        }
+
+        stallHandler.renewStall(id, false);
+        return true;
+    }
+
+    private boolean handleAbandonCmd(CommandSender sender, String[] args) {
+        Player player;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        } else {
+            StaticUtil.sendMessage(sender, "&cCommand must be ran by a player!");
+            return true;
+        }
+
+        Integer id=null;
+        if (args.length<1) {
+            for (Stall stall : stallHandler.getStalls()) {
+                if (stall.getRenterUuid().equals(player.getUniqueId())) {
+                    id = stall.getId();
+                    break;
+                }
+            }
+            if (id==null) {
+                StaticUtil.sendMessage(player, "&cCould not find your stall, do you really have one?");
+                return true;
+            }
+        } else {
+            try {
+                id = Integer.valueOf(args[1]);
+            } catch (Exception e) {
+                StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+                return true;
+            }
+        }
+
+        if (!stallHandler.getStall(id).getRenterUuid().equals(player.getUniqueId())) {
+            StaticUtil.sendMessage(player, "&cStall "+ id +"is not yours!");
+            return true;
+        }
+
+        stallHandler.clearStall(id, "abandoned", false);
+        return true;
     }
 
     /**
