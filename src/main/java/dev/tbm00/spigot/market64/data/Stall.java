@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 
 import com.griefdefender.api.claim.Claim;
 
@@ -20,7 +20,7 @@ public class Stall {
     private Set<UUID> shopUuids = new HashSet<>();                             // not stored in mysql
     private ConcurrentHashMap<String, Shop> shops = new ConcurrentHashMap<>(); // not stored in mysql
     private World world; // stored in mysql as String world.getName()
-    private Block sign; // coords stored in mysql as String "x,y,z"
+    private Location signLocation; // coords stored in mysql as String "x,y,z"
     private int[] storageCoords; // x,y,z
     private Double initialPrice;
     private Double renewalPrice;
@@ -58,7 +58,7 @@ public class Stall {
                  Set<UUID> shopUuids,
                  ConcurrentHashMap<String, Shop> shops,
                  World world,
-                 Block sign,
+                 Location signLocation,
                  int[] storageCoords,
                  Double initialPrice,
                  Double renewalPrice,
@@ -75,7 +75,7 @@ public class Stall {
         this.shopUuids = new HashSet<>(shopUuids);
         this.shops = shops;
         this.world = world;
-        this.sign = sign;
+        this.signLocation = signLocation;
         this.storageCoords = storageCoords;
         this.initialPrice = initialPrice;
         this.renewalPrice = renewalPrice;
@@ -150,13 +150,13 @@ public class Stall {
         this.world = world;
     }
 
-    /** @return the stall's sign */
-    public Block getSign() {
-        return sign;
+    /** @return the stall's sign location*/
+    public Location getSignLocation() {
+        return signLocation;
     }
-    /** @param sign the sign block to set */
-    public void setSign(Block sign) {
-        this.sign = sign;
+    /** @param signLocation the sign location to set */
+    public void setSignLocation(Location signLocation) {
+        this.signLocation = signLocation;
     }
 
     /** @return the expired goods storage location */

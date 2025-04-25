@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
@@ -121,7 +122,7 @@ public class StallHandler {
      * @param claimUuid UUID
      * @returns true on success, false if error
      */
-    public boolean createStall(int stallId, int rentalTime, int maxPlayTime, double initialPrice, double renewalPrice, String worldName, Block sign, String storageLoc, UUID claimUuid) {
+    public boolean createStall(int stallId, int rentalTime, int maxPlayTime, double initialPrice, double renewalPrice, String worldName, Location signLocation, String storageLoc, UUID claimUuid) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) return false;
 
@@ -147,7 +148,7 @@ public class StallHandler {
             }
         }
         
-        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, sign, storageCoords, initialPrice, renewalPrice,
+        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, signLocation, storageCoords, initialPrice, renewalPrice,
                                     rentalTime, maxPlayTime, false, null, null, null, null);
             
         if (!dao.insert(newStall)) return false;
@@ -182,7 +183,7 @@ public class StallHandler {
         double price = stall.getInitialPrice();
         
         if (!ecoHook.hasMoney(player, price)) {
-            StaticUtil.sendMessage(player, "&cYou don't have enough money!");
+            StaticUtil.sendMessage(player, "&cYou don't have enough money! ($" + StaticUtil.formatInt(price)+")");
             return false;
         } else if (!ecoHook.removeMoney(player, price)) {
             StaticUtil.sendMessage(player, "&cError when charging you!");
@@ -482,7 +483,8 @@ public class StallHandler {
      *        - If it hasn'tbeen a week since the transaction date, check if the player has more than X weeks of playtime
      *           - If renter has more than X weeks of playtime, evict the stall
      */
-    public void dailyTask() {
+    public int dailyTask() {
+        int count = 0;
         for (Stall stall : stalls) {
             if (stall==null) continue;
             if (!stall.isRented()) continue;
@@ -498,12 +500,14 @@ public class StallHandler {
             if (lastTransaction!=null && lastTransaction.before(Date.from(sinceDate))) {
                 clearStall(id, "no sales", true);
                 StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for "+stall.getRentalTimeDays()+" days!");
+                ++count;
                 continue;
             }
 
             if (StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
                 clearStall(id, "max playtime", true);
                 StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
+                ++count;
                 continue;
             }
 
@@ -517,10 +521,12 @@ public class StallHandler {
                 if (!renewStall(id, true)) {
                     clearStall(id, "missed payment", true);
                     StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment! (funds were not in your pocket)");
+                    ++count;
                     continue;
                 }
             }
         }
+        return count;
     }
 
     public boolean getShopInfo(Player player) {

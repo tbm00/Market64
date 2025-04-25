@@ -19,15 +19,6 @@ public class ShopTransaction implements Listener {
     }
 
     /**
-     * Process (in order): 
-     *  - Updates the stall's last transaction date
-     * 
-     *  - Updates internal Stall object
-     *  - Updates Stall entry in SQL database
-     *  
-     *  - Returns true on success, false when there was an error
-     */
-    /**
      * Updates the stall's last transaction date if its active.
      *
      * @param event the ShopTransactionEvent

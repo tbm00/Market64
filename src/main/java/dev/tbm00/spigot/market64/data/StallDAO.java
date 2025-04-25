@@ -15,8 +15,8 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 
 import dev.tbm00.spigot.market64.StaticUtil;
 
@@ -143,7 +143,7 @@ public class StallDAO {
         int id = rs.getInt("id");
         UUID claimUuid = UUID.fromString(rs.getString("claim_uuid"));
         World world = Bukkit.getWorld(rs.getString("world"));
-        Block sign = getBlockFromCoords(world, rs.getString("sign_coords"));
+        Location signLocation = getLocationFromCoords(world, rs.getString("sign_coords"));
         int[] storageCoords = parseCoords(rs.getString("storage_coords"));
         double initialPrice = rs.getDouble("initial_price");
         double renewalPrice  = rs.getDouble("renewal_price");
@@ -156,7 +156,7 @@ public class StallDAO {
         java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
-        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, sign, storageCoords, initialPrice, renewalPrice, 
+        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, signLocation, storageCoords, initialPrice, renewalPrice, 
                         rentalTime, maxPlayTime, rented, renterUuid, renterName, eviction, lastTransaction);
     }
 
@@ -164,7 +164,7 @@ public class StallDAO {
         ps.setInt(1, s.getId());
         ps.setString(2, s.getClaimUuid().toString());
         ps.setString(3, s.getWorld().getName());
-        ps.setString(4, joinCoords(getCoordsFromBlock(s.getSign())));
+        ps.setString(4, joinCoords(getCoordsFromLocation(s.getSignLocation())));
         ps.setString(5, joinCoords(s.getStorageCoords()));
         ps.setDouble(6, s.getInitialPrice());
         ps.setDouble(7, s.getRenewalPrice());
@@ -185,17 +185,17 @@ public class StallDAO {
         return out;
     }
 
-    private int[] getCoordsFromBlock(Block block) {
-        if (block == null) return new int[]{0,0,0};
-        return new int[]{block.getX(),block.getY(),block.getZ()};
+    private int[] getCoordsFromLocation(Location location) {
+        if (location == null) return new int[]{0,0,0};
+        return new int[]{location.getBlockX(),location.getBlockY(),location.getBlockZ()};
     }
 
-    private Block getBlockFromCoords(World world, String coords) {
+    private Location getLocationFromCoords(World world, String coords) {
         if (world==null || coords==null || coords.isEmpty()) return null;
 
         int[] coordsArr = parseCoords(coords);
 
-        return world.getBlockAt(coordsArr[0], coordsArr[1], coordsArr[2]);
+        return world.getBlockAt(coordsArr[0], coordsArr[1], coordsArr[2]).getLocation();
     }
 
     private String joinCoords(int[] coords) {

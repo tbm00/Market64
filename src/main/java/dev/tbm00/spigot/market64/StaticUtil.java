@@ -35,6 +35,8 @@ public class StaticUtil {
     public static final int MAX_CONTAINED_CLAIMS = 2;
     public static final String MARKET_WORLD = "Tadow";
     public static final String MARKET_REGION = "market";
+    public static final String PLAYER_PERM = "market64.player";
+    public static final String ADMIN_PERM = "market64.admin";
 
     public static void init(Market64 javaPlugin, ConfigHandler configHandler) {
         StaticUtil.javaPlugin = javaPlugin;

@@ -18,7 +18,6 @@ import dev.tbm00.spigot.market64.data.Stall;
 
 public class StallCmd implements TabExecutor {
     private final StallHandler stallHandler;
-    private final String PLAYER_PERM = "market64.player";
 
     public StallCmd(StallHandler stallHandler) {
         this.stallHandler = stallHandler;
@@ -38,7 +37,7 @@ public class StallCmd implements TabExecutor {
         if (sender instanceof ConsoleCommandSender) {
             StaticUtil.sendMessage(sender, "&cThis command cannot be run through the console!");
             return true;
-        } else if (!StaticUtil.hasPermission(sender, PLAYER_PERM)) {
+        } else if (!StaticUtil.hasPermission(sender, StaticUtil.PLAYER_PERM)) {
             StaticUtil.sendMessage(sender, "&cNo permission!");
             return true;
         }
@@ -53,7 +52,7 @@ public class StallCmd implements TabExecutor {
             case "help":
                 return handleHelpCmd(player);
             case "rent":
-                // implement: return handleRentCmd(player, args);
+                return handleRentCmd(player, args);
             case "renew":
                 // implement: return handleRenewCmd(player, args);
             case "abandon":
@@ -71,11 +70,37 @@ public class StallCmd implements TabExecutor {
      */
     private boolean handleHelpCmd(Player player) {
         player.sendMessage(ChatColor.DARK_AQUA + "--- " + ChatColor.AQUA + "Stall Commands" + ChatColor.DARK_AQUA + " ---\n"
+            + ChatColor.WHITE + "/stalls" + ChatColor.GRAY + " Open the main Stall GUI\n"
+            + ChatColor.WHITE + "/stall <id>" + ChatColor.GRAY + " Open the stall's GUI\n"
             + ChatColor.WHITE + "/stall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automaticaly if you have enough money in your pocket\n"
             + ChatColor.WHITE + "/stall renew [id]" + ChatColor.GRAY + " Renew your stall early, if [id] is not null, it will abandon your only stall\n"
             + ChatColor.WHITE + "/stall abandon [id]" + ChatColor.GRAY + " Abandon your stall, if [id] is not null, it will abandon your only stall\n"
         );
         return true;
+    }
+
+    private boolean handleRentCmd(Player player, String[] args) {
+        if (args.length<1) {
+            StaticUtil.sendMessage(player, "&cYou must provide a stall ID to rent!");
+            return false;
+        } 
+
+        int id;
+        try {
+            id = Integer.valueOf(args[1]);
+        } catch (Exception e) {
+            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
+            return true;
+        }
+
+        if (stallHandler.fillStall(id, player)) {
+            Stall stall = stallHandler.getStall(id);
+            StaticUtil.sendMessage(player, "&aRented stall "+id+"! &eYour stall will automatically renew after 7 days, as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
+            return true;
+        } else {
+            StaticUtil.sendMessage(player, "&aFailed to evict stall "+id+"!");
+            return true;
+        }
     }
 
     /**
