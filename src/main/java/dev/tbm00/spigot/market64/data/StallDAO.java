@@ -25,13 +25,13 @@ public class StallDAO {
 
     // SQL statements formatted for readability
     private static final String SELECT_ALL_SQL =
-        "SELECT * FROM market64_shop";
+        "SELECT * FROM market64_stalls";
 
     private static final String SELECT_BY_ID_SQL =
-        "SELECT * FROM market64_shop WHERE id = ?";
+        "SELECT * FROM market64_stalls WHERE id = ?";
 
     private static final String INSERT_SQL = """
-        INSERT INTO market64_shop (
+        INSERT INTO market64_stalls (
             id,
             claim_uuid,
             world,
@@ -50,7 +50,7 @@ public class StallDAO {
         """;
 
     private static final String UPDATE_SQL = """
-        UPDATE market64_shop
+        UPDATE market64_stalls
         SET
             id = ?,
             claim_uuid = ?,
@@ -70,7 +70,7 @@ public class StallDAO {
         """;
 
     private static final String DELETE_SQL =
-        "DELETE FROM market64_shop WHERE id = ?";
+        "DELETE FROM market64_stalls WHERE id = ?";
 
     public StallDAO(MySQLConnection db) {
         this.db = db;

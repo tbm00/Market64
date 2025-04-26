@@ -19,7 +19,7 @@ public class MySQLConnection {
         
         loadSQLConfig();
         setupConnectionPool();
-        //clearOldTables();
+        clearOldTables();
         initializeDatabase();
     }
 
@@ -65,7 +65,7 @@ public class MySQLConnection {
     }
 
     private void initializeDatabase() {
-        String playerTable = "CREATE TABLE IF NOT EXISTS market64_shop (" +
+        String playerTable = "CREATE TABLE IF NOT EXISTS market64_stalls (" +
                 "id INT PRIMARY KEY NOT NULL, " +
                 "claim_uuid VARCHAR(36) NOT NULL, " +
                 "world TEXT NOT NULL, " +
@@ -89,8 +89,8 @@ public class MySQLConnection {
         }
     }
 
+    //@SuppressWarnings("unused")
     private void clearOldTables() {
-        // names of the old tables you want to remove
         String[] oldTables = {
             "market64_shop",
             "shopstalls64_shop"
