@@ -12,14 +12,18 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import com.griefdefender.api.claim.Claim;
 
+import dev.tbm00.spigot.market64.Market64;
 import dev.tbm00.spigot.market64.StallHandler;
 import dev.tbm00.spigot.market64.StaticUtil;
 import dev.tbm00.spigot.market64.data.Stall;
+import dev.tbm00.spigot.market64.gui.StallGui;
 
 public class StallSign implements Listener {
+    private final Market64 javaPlugin;
     private final StallHandler stallHandler;
 
-    public StallSign(StallHandler stallHandler) {
+    public StallSign(Market64 javaPlugin, StallHandler stallHandler) {
+        this.javaPlugin = javaPlugin;
         this.stallHandler = stallHandler;
     }
 
@@ -42,7 +46,7 @@ public class StallSign implements Listener {
                 for (Stall stall : stallHandler.getStalls()) {
                     if (stall == null) continue;
                     if (stall.getSignLocation().equals(event.getClickedBlock().getLocation())) {
-                        // trigger gui opening
+                        new StallGui(javaPlugin, stallHandler, stall, event.getPlayer());
                         return;
                     }
                 }

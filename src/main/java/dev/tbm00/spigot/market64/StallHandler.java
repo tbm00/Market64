@@ -207,7 +207,14 @@ public class StallHandler {
         } else if (stall.isRented()) {
             StaticUtil.sendMessage(player, "&cStall is currently rented!");
             return false;
-        } 
+        }
+
+        for (Stall s : stalls) {
+            if (s.getRenterUuid().equals(player.getUniqueId())) {
+                StaticUtil.sendMessage(player, "&cYou already have a stall!");
+                return false;
+            }
+        }
         
         double price = stall.getInitialPrice();
         

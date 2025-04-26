@@ -4,6 +4,7 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,6 +16,7 @@ import org.bukkit.block.sign.Side;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.HumanEntity;
@@ -22,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -31,6 +34,8 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import dev.tbm00.spigot.market64.data.ConfigHandler;
 import dev.tbm00.spigot.market64.data.Stall;
+import dev.triumphteam.gui.builder.item.ItemBuilder;
+import dev.triumphteam.gui.guis.BaseGui;
 
 public class StaticUtil {
     private static Market64 javaPlugin;
@@ -41,6 +46,8 @@ public class StaticUtil {
     public static final String MARKET_REGION = "market";
     public static final String PLAYER_PERM = "market64.player";
     public static final String ADMIN_PERM = "market64.admin";
+
+    public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();
 
     public static void init(Market64 javaPlugin, ConfigHandler configHandler) {
         StaticUtil.javaPlugin = javaPlugin;
@@ -207,6 +214,7 @@ public class StaticUtil {
             sign.getSide(Side.FRONT).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
                 sign.getSide(Side.FRONT).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+            else sign.getSide(Side.FRONT).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
             StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
@@ -218,6 +226,7 @@ public class StaticUtil {
             sign.getSide(Side.BACK).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
                 sign.getSide(Side.BACK).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+            else sign.getSide(Side.BACK).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
             StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
@@ -259,6 +268,80 @@ public class StaticUtil {
         }
 
         return true;
+    }
+
+    /**
+     * Teleports a player to the given world and coordinates after a 5-second delay.
+     * If the player moves during the delay, the teleport is cancelled.
+     *
+     * @param player the player to teleport
+     * @param world the target world
+     * @param x target x-coordinate
+     * @param y target y-coordinate
+     * @param z target z-coordinate
+     * @return true if the teleport countdown was started, false if the player was already waiting
+     */
+    public static boolean teleportPlayer(Player player, World world, int x, int y, int z) {
+        String playerName = player.getName();
+        if (pendingTeleports.contains(playerName)) {
+            sendMessage(player, "&cYou are already waiting for a teleport!");
+            return false;
+        }
+        pendingTeleports.add(playerName);
+        sendMessage(player, "&aTeleporting in 3 seconds -- don't move!");
+
+        // Schedule the teleport to run later
+        Bukkit.getScheduler().runTaskLater(javaPlugin, () -> {
+            if (pendingTeleports.contains(playerName)) {
+                // Remove player from pending list and teleport
+                pendingTeleports.remove(playerName);
+                if (world != null) {
+                    Location targetLocation = new Location(world, x, y, z);
+                    player.teleport(targetLocation);
+                } else {
+                    sendMessage(player, "&cWorld not found!");
+                }
+            }
+        }, 60L);
+
+        return true;
+    }
+
+    public static void disableAll(BaseGui gui) {
+        gui.disableItemDrop();
+        gui.disableItemPlace();
+        gui.disableItemSwap();
+        gui.disableItemTake();
+        gui.disableOtherActions();
+    }
+
+    /**
+     * Formats and sets the main GUI's info item.
+     *
+     * @param gui the gui that will be sent to the player
+     * @param item holder for current item
+     * @param meta holder for current item's meta
+     * @param lore holder for current item's lore
+     */
+    public static void setAboutItemInGui(BaseGui gui, ItemStack item, ItemMeta meta, List<String> lore) {
+        lore.add("&8-----------------------");
+        lore.add("&fYou can rent shop stalls in our market!");
+        lore.add(" ");
+        lore.add("&7Some stalls are available for everyone,");
+        lore.add("&7some are only available for newbies.");
+        lore.add(" ");
+        lore.add("&7Your stall will automatically renew when");
+        lore.add("&7the time runs out, unless");
+        lore.add("&7- you don't keep enough money stored in your pocket,");
+        lore.add("&7- your stall's shops haven't had any recent transactions, or");
+        lore.add("&7- you're no longer a newbie, if it's a newbie stall.");
+        lore.add(" ");
+        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbout Stalls"));
+        item.setItemMeta(meta);
+        item.setType(Material.DARK_OAK_SIGN);
+        gui.setItem(6, 5, ItemBuilder.from(item).asGuiItem(event -> {event.setCancelled(true);}));
+        lore.clear();
     }
 
     /**

@@ -8,6 +8,7 @@ depend: [DisplayShops, WorldGuard, GriefDefender, Vault]
 commands:
   stall:
     description: Main command for Market64
+    aliases: [stalls]
   stalladmin:
     description: Admin commands for Market64
 permissions:

@@ -13,13 +13,18 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import dev.tbm00.spigot.market64.StaticUtil;
+import dev.tbm00.spigot.market64.Market64;
 import dev.tbm00.spigot.market64.StallHandler;
 import dev.tbm00.spigot.market64.data.Stall;
+import dev.tbm00.spigot.market64.gui.MainGui;
+import dev.tbm00.spigot.market64.gui.StallGui;
 
 public class StallCmd implements TabExecutor {
+    private final Market64 javaPlugin;
     private final StallHandler stallHandler;
 
-    public StallCmd(StallHandler stallHandler) {
+    public StallCmd(Market64 javaPlugin, StallHandler stallHandler) {
+        this.javaPlugin = javaPlugin;
         this.stallHandler = stallHandler;
     }
 
@@ -42,8 +47,7 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        if (args.length == 0)
-            return false;
+        if (args.length==0) return handleMainGuiCmd(sender);
 
         String subCmd = args[0].toLowerCase();
         switch (subCmd) {
@@ -56,7 +60,7 @@ public class StallCmd implements TabExecutor {
             case "abandon":
                 return handleAbandonCmd(sender, args);
             default:
-                return false;
+                return handleSearchCmd(sender, args);
         }
     }
     
@@ -201,8 +205,45 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        stallHandler.clearStall(id, "player left", false);
+        stallHandler.clearStall(id, "player abandoned", false);
         return true;
+    }
+
+    private boolean handleMainGuiCmd(CommandSender sender) {
+        Player player;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        } else {
+            StaticUtil.sendMessage(sender, "&cCommand must be ran by a player!");
+            return true;
+        }
+
+        new MainGui(javaPlugin, stallHandler, stallHandler.getStalls(), player);
+        return true;
+    }
+
+    private boolean handleSearchCmd(CommandSender sender, String[] args) {
+        Player player;
+        if (sender instanceof Player) {
+            player = (Player) sender;
+        } else {
+            StaticUtil.sendMessage(sender, "&cCommand must be ran by a player!");
+            return true;
+        }
+
+        Stall stall=null;
+        Integer id=null;
+        try {
+            id = Integer.valueOf(args[0]);
+            stall = stallHandler.getStall(id);
+        } catch (Exception e) {
+            StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[0]+"'!");
+            return true;
+        }
+
+        new StallGui(javaPlugin, stallHandler, stall, player);
+        return true;
+        
     }
 
     /**
@@ -213,7 +254,7 @@ public class StallCmd implements TabExecutor {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
             list.clear();
-            String[] subCmds = new String[]{"rent","renew","abandon"};
+            String[] subCmds = new String[]{"help","rent","renew","abandon","<id>"};
             for (String n : subCmds) {
                 if (n!=null && n.startsWith(args[0])) 
                     list.add(n);
