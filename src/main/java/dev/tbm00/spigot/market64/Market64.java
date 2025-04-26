@@ -8,6 +8,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev.tbm00.spigot.market64.data.ConfigHandler;
 import dev.tbm00.spigot.market64.data.MySQLConnection;
 import dev.tbm00.spigot.market64.hook.*;
+import dev.tbm00.spigot.market64.listener.ShopTransaction;
+import dev.tbm00.spigot.market64.listener.StallSign;
 import dev.tbm00.spigot.market64.command.*;
 
 public class Market64 extends JavaPlugin {
@@ -46,17 +48,17 @@ public class Market64 extends JavaPlugin {
 
             setupHooks();
             
-
             if (configHandler.isFeatureEnabled()) {
-                stallHandler = new StallHandler(mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
+                stallHandler = new StallHandler(this, mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
+                
+                // Register Listeners
+                getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);
+                getServer().getPluginManager().registerEvents(new StallSign(stallHandler), this);
                 //new ClaimHandler(this, wgHook);
-
-                // Register Listener
-                //getServer().getPluginManager().registerEvents(new ShopTransaction(stallHandler), this);
                 
                 // Register Commands
-                //getCommand("stall").setExecutor(new StallCmd(stallHandler));
-                //getCommand("stalladmin").setExecutor(new AdminCmd(stallHandler));
+                getCommand("stall").setExecutor(new StallCmd(stallHandler));
+                getCommand("stalladmin").setExecutor(new AdminCmd(stallHandler));
             }
         }
     }

@@ -3,12 +3,14 @@ package dev.tbm00.spigot.market64.listener;
 import java.util.Date;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 import xzot1k.plugins.ds.api.events.ShopTransactionEvent;
 
 import dev.tbm00.spigot.market64.StallHandler;
+import dev.tbm00.spigot.market64.StaticUtil;
 import dev.tbm00.spigot.market64.data.Stall;
 
 public class ShopTransaction implements Listener {
@@ -29,7 +31,10 @@ public class ShopTransaction implements Listener {
         for (Stall stall : stallHandler.getStalls()) {
             if ((stall != null && stall.isRented()) && stall.getShopUuids().contains(shopId)) {
                 stall.setLastTransaction(new Date());
-                stallHandler.getStallDao().update(stall);
+
+                if (!stallHandler.getStallDao().update(stall)) {
+                    StaticUtil.log(ChatColor.RED, "stallHandler.getStallDao().update(stall) failed after updating shop transaction for stall " + stall.getId() +"!");
+                }
             }
         }
     }

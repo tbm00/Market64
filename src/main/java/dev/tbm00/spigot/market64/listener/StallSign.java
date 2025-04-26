@@ -2,7 +2,6 @@ package dev.tbm00.spigot.market64.listener;
 
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
@@ -41,6 +40,7 @@ public class StallSign implements Listener {
                     return;
                 }
                 for (Stall stall : stallHandler.getStalls()) {
+                    if (stall == null) continue;
                     if (stall.getSignLocation().equals(event.getClickedBlock().getLocation())) {
                         // trigger gui opening
                         return;
@@ -61,6 +61,12 @@ public class StallSign implements Listener {
             return;
         }
 
+        // Expected Sign Format:
+        // [stall] <int id>
+        // <int rentalDays> <int maxPlayDays>
+        // <double initialPrice> <double renewalPrice>
+        // <int x>,<int y>,<int z>
+
         int id;
         int rentalTimeDays, maxPlayTimeDays;
         double initialPrice, renewalPrice;
@@ -69,10 +75,10 @@ public class StallSign implements Listener {
         UUID claimUuid;
 
         String line1 = event.getLine(0).trim();
-        if (!line1.contains("stall") && !line1.contains("Stall")) return;
+        if (!line1.contains("[stall]") && !line1.contains("[Stall]")) return;
         String[] parts1 = line1.split("\\s+");
         if (parts1.length < 2) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 1, expecting 'Stall <id>'");
+            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 1, expecting '[stall] <int id>'");
             return;
         } try {
             id = Integer.parseInt(parts1[1]);
@@ -87,7 +93,7 @@ public class StallSign implements Listener {
         String line2 = event.getLine(1).trim();
         String[] parts2 = line2.split("\\s+");
         if (parts2.length < 2) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 2, expecting <rentalDays> <maxPlayDays>");
+            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 2, expecting '<int rentalDays> <int maxPlayDays>'");
             return;
         } try {
             rentalTimeDays    = Integer.parseInt(parts2[0]);
@@ -100,7 +106,7 @@ public class StallSign implements Listener {
         String line3 = event.getLine(2).trim();
         String[] parts3 = line3.split("\\s+");
         if (parts3.length < 2) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 3, expecting <initialPrice> <renewalPrice>");
+            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 3, expecting '<double initialPrice> <double renewalPrice>'");
             return;
         } try {
             initialPrice = Double.parseDouble(parts3[0]);
@@ -112,7 +118,7 @@ public class StallSign implements Listener {
 
         storageLocCoords = event.getLine(3).trim();
         if (!storageLocCoords.matches("-?\\d+,-?\\d+,-?\\d+")) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid storage coords: " + storageLocCoords);
+            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 4, expecting '<int x>,<int y>,<int z>'");
             return;
         }
 
@@ -125,15 +131,9 @@ public class StallSign implements Listener {
         if (!stallHandler.createStall(id, rentalTimeDays, maxPlayTimeDays, initialPrice, renewalPrice, signBlock.getWorld().getName(), signBlock.getLocation(), storageLocCoords, claimUuid)) {
             StaticUtil.sendMessage(event.getPlayer(), "&cStall creation failed!");
             return;
-        }
-
-        Sign sign = (Sign) signBlock.getState();
-        try {
-            sign.getSide(Side.FRONT).setLine(0, "&1[Stall " + id +"]");
-            sign.getSide(Side.BACK).setLine(0, "&1[Stall " + id +"]");
-            sign.update();
-        } catch (Exception e) {
-            StaticUtil.log(ChatColor.RED, "Caught exception setting sign text!" + e.getMessage());
+        } else {
+            StaticUtil.sendMessage(event.getPlayer(), "&aCreated stall #" + id);
+            return;
         }
     }
 }

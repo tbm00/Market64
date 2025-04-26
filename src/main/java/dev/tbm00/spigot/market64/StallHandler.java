@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +28,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.griefdefender.api.claim.Claim;
 
@@ -41,6 +44,7 @@ import dev.tbm00.spigot.market64.hook.GDHook;
 import dev.tbm00.spigot.market64.hook.WGHook;
 
 public class StallHandler {
+    private final Market64 javaPlugin;
     private final StallDAO dao;
     public final DSHook dsHook;
     public final GDHook gdHook;
@@ -50,7 +54,8 @@ public class StallHandler {
     // stored sorted in order of stalls' ids
     private final List<Stall> stalls = new ArrayList<>();
 
-    public StallHandler(MySQLConnection db, DSHook dsHook, GDHook gdHook, WGHook wgHook, EcoHook ecoHook) {
+    public StallHandler(Market64 javaPlugin, MySQLConnection db, DSHook dsHook, GDHook gdHook, WGHook wgHook, EcoHook ecoHook) {
+        this.javaPlugin = javaPlugin;
         this.dao = new StallDAO(db);
         this.dsHook = dsHook;
         this.gdHook = gdHook;
@@ -143,6 +148,20 @@ public class StallHandler {
             if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
                 String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
                 stallShops.put(locationStr, shop);
+                shop.setStoredBalance(0);
+                shop.setStock(0);
+                shop.setShopItemAmount(1);
+                shop.setShopItem(null);
+                shop.setGlobalBuyLimit(-1);
+                shop.setGlobalSellLimit(-1);
+                shop.setGlobalBuyCounter(-1);
+                shop.setGlobalSellCounter(-1);
+                shop.setPlayerBuyLimit(-1);
+                shop.setPlayerSellLimit(-1);
+                shop.setBuyPrice(-1);
+                shop.setSellPrice(-1);
+                shop.setOwnerUniqueId(null);
+                shop.reset();
                 shopUuids.add(shop.getShopId());
                 continue shopLoop;
             }
@@ -154,6 +173,14 @@ public class StallHandler {
         if (!dao.insert(newStall)) return false;
         ensureCapacity(stallId);
         stalls.set(stallId, newStall);
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                StaticUtil.StallSignSetAvaliable(newStall);
+            }
+        }.runTaskLater(javaPlugin, 4L);
+
         return true;
     }
 
@@ -210,7 +237,18 @@ public class StallHandler {
         Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
-        return dao.update(stall);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                StaticUtil.StallSignSetUnavaliable(stall);
+            }
+        }.runTaskLater(javaPlugin, 4L);
+
+        if (!dao.update(stall)) {
+            StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after filling stall " + stall.getId() +"!");
+        }
+
+        return true;
     }
 
     /**
@@ -224,7 +262,7 @@ public class StallHandler {
     public boolean renewStall(int stallId, boolean auto) {
         Stall stall = getStall(stallId);
         if (stall == null) {
-            StaticUtil.log(ChatColor.RED, "&cCould not find stall!");
+            StaticUtil.log(ChatColor.RED, "Could not find stall!");
             return false;
         }
 
@@ -251,7 +289,7 @@ public class StallHandler {
             return false;
         } else if (!ecoHook.removeMoney(offlinePlayer, price)) {
             StaticUtil.log(ChatColor.RED, "Error when charging "+offlinePlayer.getName()+" to renew their stall #"+stall.getId());
-            return true;
+            return false;
         }
 
         Date dateBase = stall.getEvictionDate() != null ? 
@@ -262,7 +300,12 @@ public class StallHandler {
 
         if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
         else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
-        return dao.update(stall);
+
+        if (!dao.update(stall)) {
+            StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after renewing stall " + stall.getId() +"!");
+        }
+
+        return true;
     }
 
     /**
@@ -307,7 +350,7 @@ public class StallHandler {
     public boolean clearStall(int stallId, String reason, boolean auto) {
         Stall stall = getStall(stallId);
         if (stall == null) {
-            StaticUtil.log(ChatColor.RED, "&cCould not find stall!");
+            StaticUtil.log(ChatColor.RED, "Could not find stall!");
             return false;
         }
     
@@ -409,6 +452,7 @@ public class StallHandler {
         pm.setLore(lore);
         paper.setItemMeta(pm);
 
+        StaticUtil.log(null, "calling PAPER addToBarrel()...");
         addToBarrel(stall, paper);
 
         stall.setRented(false);
@@ -416,7 +460,10 @@ public class StallHandler {
         stall.setLastTransaction(null);
         stall.setRenterName(null);
         stall.setRenterUuid(null);
-        dao.update(stall);
+
+        if (!dao.update(stall)) {
+            StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after clearing stall " + stall.getId() +"!");
+        }
 
         if (!auto) {
             if (toInv && toStallStorage)
@@ -434,30 +481,53 @@ public class StallHandler {
             else if (toInv)
                 StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated, money was returned, and items returned to your inventory..!");
             else StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated and money was returned!");
-        } 
+        }
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                StaticUtil.StallSignSetAvaliable(stall);
+            }
+        }.runTaskLater(javaPlugin, 4L);
+
         return true;
     }
 
+
     private void addToBarrel(Stall stall, ItemStack item) {
-        Block storageBlock = stall.getWorld().getBlockAt(stall.getStorageCoords()[0], stall.getStorageCoords()[1], stall.getStorageCoords()[2]);
-        if (storageBlock.getType() != Material.BARREL) {
-            storageBlock.setType(Material.BARREL);
+        Block primary = stall.getWorld().getBlockAt(stall.getStorageCoords()[0], stall.getStorageCoords()[1], stall.getStorageCoords()[2]);
+        if (primary.getType() != Material.BARREL) {
+            StaticUtil.log(ChatColor.RED, "Stall #"+stall.getId()+"'s barrel storage location isn't a barrel.. setting it now!");
+            primary.setType(Material.BARREL);
         }
 
-        Barrel barrel = (Barrel) storageBlock.getState();
-        Inventory inv = barrel.getInventory();
-        if (inv.firstEmpty() != -1) {
-            inv.addItem(item);
-            barrel.update();
-        } else {
-            storageBlock = storageBlock.getRelative(BlockFace.DOWN);
-            storageBlock.setType(Material.BARREL);
-            barrel = (Barrel) storageBlock.getState();
-            barrel.getInventory().addItem(item);
-            barrel.update();
-            int[] coords = {stall.getStorageCoords()[0], stall.getStorageCoords()[1]-1, stall.getStorageCoords()[2]};
-            stall.setStorageCoords(coords);
-            dao.update(stall);
+        Inventory primaryInv = ((Barrel) primary.getState()).getInventory();
+        Map<Integer, ItemStack> leftover = primaryInv.addItem(item);
+
+        if (!leftover.isEmpty()) { // create new barrel below, and update stall
+            Block lower = primary.getRelative(BlockFace.DOWN);
+            if (lower.getType() != Material.BARREL) {
+                lower.setType(Material.BARREL);
+            }
+    
+            Inventory lowerInv = ((Barrel) lower.getState()).getInventory();
+            Map<Integer, ItemStack> leftover2 = new HashMap<>();
+    
+            for (ItemStack stack : leftover.values()) {
+                leftover2.putAll(lowerInv.addItem(stack));
+            }
+    
+            if (!leftover2.isEmpty()) {
+                for (ItemStack drop : leftover2.values()) {
+                    stall.getWorld().dropItemNaturally(stall.getSignLocation().add(0.5,1,0.5), drop);
+                }
+            }
+    
+            int[] newCoords = {stall.getStorageCoords()[0], stall.getStorageCoords()[1] - 1, stall.getStorageCoords()[2]};
+            stall.setStorageCoords(newCoords);
+            if (!dao.update(stall)) {
+                StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after adjusting storage block coords for stall " + stall.getId() +"!");
+            }
         }
     }
 
@@ -504,7 +574,7 @@ public class StallHandler {
                 continue;
             }
 
-            if (StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
+            if (stall.getPlayTimeDays()!=-1 && StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
                 clearStall(id, "max playtime", true);
                 StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
                 ++count;
@@ -515,7 +585,9 @@ public class StallHandler {
             if (evictionDate==null) {
                 Instant newExpiry = (new Date()).toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
                 stall.setEvictionDate(Date.from(newExpiry));
-                dao.update(stall);
+                if (!dao.update(stall)) {
+                    StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after setting null->current+7d eviction date for stall " + stall.getId() +"!");
+                }
                 continue;
             } else if ((new Date()).after(evictionDate)) {
                 if (!renewStall(id, true)) {
@@ -545,9 +617,10 @@ public class StallHandler {
         StaticUtil.log(color, "Stored Money: "+shop.getStoredBalance()+", B:"+shop.getBuyPrice(false)+" S:"+shop.getSellPrice(false));
         StaticUtil.log(color, "Limits: GB:"+shop.getGlobalBuyLimit()+" GS:"+shop.getGlobalSellLimit()+" PB:"+shop.getPlayerBuyLimit()+" PS:"+shop.getPlayerSellLimit());
         StaticUtil.log(color, "Counts: GB:"+shop.getGlobalBuyCounter()+" GS:"+shop.getGlobalSellCounter());
-        StaticUtil.log(color, "Owner: "+Bukkit.getOfflinePlayer(shop.getOwnerUniqueId()).getName());
+        if (shop.getOwnerUniqueId()!=null) StaticUtil.log(color, "Owner: "+Bukkit.getOfflinePlayer(shop.getOwnerUniqueId()).getName());
         StaticUtil.log(color, "Assistants: ");
         for (UUID uuid : shop.getAssistants()) {
+            if (uuid==null) continue;
             StaticUtil.log(color, "* "+Bukkit.getOfflinePlayer(uuid).getName());
         } StaticUtil.log(color, "-");
     }

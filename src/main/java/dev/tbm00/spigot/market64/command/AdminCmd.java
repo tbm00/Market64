@@ -76,7 +76,7 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleEvictCmd(CommandSender sender, String[] args) {
-        if (args.length<1) {
+        if (args.length<2) {
             StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to evict!");
             return false;
         } 
@@ -105,7 +105,7 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleDeleteCmd(CommandSender sender, String[] args) {
-        if (args.length<1) {
+        if (args.length<2) {
             StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to delete!");
             return false;
         } 
@@ -128,7 +128,7 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleStatusCmd(CommandSender sender, String[] args) {
-        if (args.length<1) {
+        if (args.length<2) {
             StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to check out!");
             return false;
         } 
@@ -179,14 +179,24 @@ public class AdminCmd implements TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
-        if (args.length == 1) {
-            list.clear();
-            String[] subCmds = new String[]{"help","delete","status","evict","dailyTask"};
-            for (String n : subCmds) {
-                if (n!=null && n.startsWith(args[0])) 
-                    list.add(n);
+        if (StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            if (args.length == 1) {
+                list.clear();
+                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask"};
+                for (String n : subCmds) {
+                    if (n!=null && n.startsWith(args[0])) 
+                        list.add(n);
+                }
+            }
+            else if (args.length == 2) {
+                list.clear();
+                for (Stall stall : stallHandler.getStalls()) {
+                    if (stall==null) continue;
+                    list.add(String.valueOf(stall.getId()));
+                }
             }
         }
+
         return list;
     }
 }

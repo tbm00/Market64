@@ -86,7 +86,7 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        if (args.length<1) {
+        if (args.length<2) {
             StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to rent!");
             return false;
         } 
@@ -104,7 +104,7 @@ public class StallCmd implements TabExecutor {
             StaticUtil.sendMessage(sender, "&aRented stall "+id+"! &eYour stall will automatically renew after 7 days ("+stall.getEvictionDate()+" ), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
             return true;
         } else {
-            StaticUtil.sendMessage(sender, "&aFailed to evict stall "+id+"!");
+            StaticUtil.sendMessage(sender, "&aFailed to rent stall "+id+"!");
             return true;
         }
     }
@@ -118,11 +118,13 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
+        Stall stall = null;
         Integer id=null;
-        if (args.length<1) {
-            for (Stall stall : stallHandler.getStalls()) {
-                if (stall.getRenterUuid().equals(player.getUniqueId())) {
-                    id = stall.getId();
+        if (args.length<2) {
+            for (Stall s : stallHandler.getStalls()) {
+                if (s.isRented() && s.getRenterUuid().equals(player.getUniqueId())) {
+                    id = s.getId();
+                    stall = s;
                     break;
                 }
             }
@@ -133,13 +135,19 @@ public class StallCmd implements TabExecutor {
         } else {
             try {
                 id = Integer.valueOf(args[1]);
+                stall = stallHandler.getStall(id);
             } catch (Exception e) {
                 StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
                 return true;
             }
         }
 
-        if (!stallHandler.getStall(id).getRenterUuid().equals(player.getUniqueId())) {
+        if (stall==null) {
+            StaticUtil.sendMessage(player, "&cCould not find your stall, do you really have one?");
+            return true;
+        }
+
+        if (!stall.getRenterUuid().equals(player.getUniqueId())) {
             StaticUtil.sendMessage(player, "&cStall "+ id +"is not yours!");
             return true;
         }
@@ -157,11 +165,13 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
+        Stall stall=null;
         Integer id=null;
-        if (args.length<1) {
-            for (Stall stall : stallHandler.getStalls()) {
-                if (stall.getRenterUuid().equals(player.getUniqueId())) {
-                    id = stall.getId();
+        if (args.length<2) {
+            for (Stall s : stallHandler.getStalls()) {
+                if (s.isRented() && s.getRenterUuid().equals(player.getUniqueId())) {
+                    id = s.getId();
+                    stall = s;
                     break;
                 }
             }
@@ -172,18 +182,24 @@ public class StallCmd implements TabExecutor {
         } else {
             try {
                 id = Integer.valueOf(args[1]);
+                stall = stallHandler.getStall(id);
             } catch (Exception e) {
                 StaticUtil.sendMessage(player, "&cCould not parse ID '"+args[1]+"'!");
                 return true;
             }
         }
 
-        if (!stallHandler.getStall(id).getRenterUuid().equals(player.getUniqueId())) {
+        if (stall==null) {
+            StaticUtil.sendMessage(player, "&cCould not find your stall, do you really have one?");
+            return true;
+        }
+
+        if (!stall.getRenterUuid().equals(player.getUniqueId())) {
             StaticUtil.sendMessage(player, "&cStall "+ id +"is not yours!");
             return true;
         }
 
-        stallHandler.clearStall(id, "abandoned", false);
+        stallHandler.clearStall(id, "player left", false);
         return true;
     }
 
@@ -201,12 +217,21 @@ public class StallCmd implements TabExecutor {
                     list.add(n);
             }
         } else if (args.length == 2) {
-            if (args[0].equals("rent") || args[0].equals("abandon") || args[0].equals("renew")) {
+            if (args[0].equals("abandon") || args[0].equals("renew")) {
                 for (Stall stall : stallHandler.getStalls()) {
+                    if (stall==null) continue;
+                    if (!stall.isRented()) continue;
                     if (sender instanceof Player && sender.getName().equalsIgnoreCase(stall.getRenterName()))
                         list.add(String.valueOf(stall.getId()));
                 }
+            } else if (args[0].equals("rent")) {
+                for (Stall stall : stallHandler.getStalls()) {
+                    if (stall==null) continue;
+                    if (stall.isRented()) continue;
+                    if (sender instanceof Player) list.add(String.valueOf(stall.getId()));
+                }
             }
+
         }
         return list;
     }

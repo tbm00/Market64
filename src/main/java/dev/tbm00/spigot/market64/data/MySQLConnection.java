@@ -19,6 +19,7 @@ public class MySQLConnection {
         
         loadSQLConfig();
         setupConnectionPool();
+        //clearOldTables();
         initializeDatabase();
     }
 
@@ -85,6 +86,26 @@ public class MySQLConnection {
             statement.execute(playerTable);
         } catch (SQLException e) {
             javaPlugin.getLogger().severe("Error initializing database: " + e.getMessage());
+        }
+    }
+
+    private void clearOldTables() {
+        // names of the old tables you want to remove
+        String[] oldTables = {
+            "market64_shop",
+            "shopstalls64_shop"
+        };
+    
+        try (Connection conn = getConnection();
+             Statement stmt = conn.createStatement()) {
+    
+            for (String tbl : oldTables) {
+                stmt.executeUpdate("DROP TABLE IF EXISTS `" + tbl + "`;");
+                javaPlugin.getLogger().info("Dropped old table '" + tbl + "' (if it existed).");
+            }
+    
+        } catch (SQLException e) {
+            javaPlugin.getLogger().severe("Failed to drop old tables: " + e.getMessage());
         }
     }
 }

@@ -7,8 +7,11 @@ import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Statistic;
@@ -27,6 +30,7 @@ import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import dev.tbm00.spigot.market64.data.ConfigHandler;
+import dev.tbm00.spigot.market64.data.Stall;
 
 public class StaticUtil {
     private static Market64 javaPlugin;
@@ -50,6 +54,7 @@ public class StaticUtil {
      * @param strings one or more message strings to log
      */
     public static void log(ChatColor chatColor, String... strings) {
+        if (chatColor==null) chatColor = ChatColor.WHITE;
 		for (String s : strings)
             javaPlugin.getServer().getConsoleSender().sendMessage("[DSA64] " + chatColor + s);
 	}
@@ -108,8 +113,16 @@ public class StaticUtil {
      * @return true if the sender has the permission, false otherwise
      */
     public static boolean hasPermission(CommandSender sender, String perm) {
-        if (sender instanceof Player && ((Player)sender).getGameMode()==GameMode.CREATIVE) return false;
         return sender.hasPermission(perm) || sender instanceof ConsoleCommandSender;
+    }
+
+    /**
+     * Translates a String to use alternative color codes.
+     * 
+     * @param string the String to translate
+     */
+    public static String translate(String string) {
+        return ChatColor.translateAlternateColorCodes('&', string);
     }
 
     /**
@@ -120,7 +133,7 @@ public class StaticUtil {
      */
     public static void sendMessage(CommandSender target, String string) {
         if (!string.isBlank())
-            target.spigot().sendMessage(new TextComponent(ChatColor.translateAlternateColorCodes('&', configHandler.getChatPrefix() + string)));
+            target.spigot().sendMessage(new TextComponent(translate(configHandler.getChatPrefix() + string)));
     }
 
     /**
@@ -172,6 +185,80 @@ public class StaticUtil {
         
         shulker.setItemMeta(meta);
         return shulker;
+    }
+
+    public static boolean StallSignSetAvaliable(Stall stall) {
+        Location loc = stall.getSignLocation();
+        if (loc==null) {
+            log(ChatColor.RED, "Could not find stall location for stall " + stall.getId());
+            return false;
+        }
+
+        Block block = loc.getBlock();
+        if (block==null || !(block.getState() instanceof Sign)) {
+            log(ChatColor.RED, "Could not find sign block at signLocation for stall " + stall.getId());
+            return false;
+        }
+
+        Sign sign = (Sign) block.getState();
+        try {
+            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(1, translate("&aAvailable to rent"));
+            sign.getSide(Side.FRONT).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
+            if (stall.getPlayTimeDays()!=-1)
+                sign.getSide(Side.FRONT).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        try {
+            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(1, translate("&aAvailable to rent"));
+            sign.getSide(Side.BACK).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
+            if (stall.getPlayTimeDays()!=-1)
+                sign.getSide(Side.BACK).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        return true;
+    }
+
+    public static boolean StallSignSetUnavaliable(Stall stall) {
+        Location loc = stall.getSignLocation();
+        if (loc==null) {
+            log(ChatColor.RED, "Could not find stall location for stall " + stall.getId());
+            return false;
+        }
+
+        Block block = loc.getBlock();
+        if (block==null || !(block.getState() instanceof Sign)) {
+            log(ChatColor.RED, "Could not find sign block at signLocation for stall " + stall.getId());
+            return false;
+        }
+
+        Sign sign = (Sign) block.getState();
+        try {
+            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(1, translate("&bRented by"));
+            sign.getSide(Side.FRONT).setLine(2, translate("&b"+stall.getRenterName()));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        try {
+            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(1, translate("&bRented by"));
+            sign.getSide(Side.BACK).setLine(2, translate("&b"+stall.getRenterName()));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        return true;
     }
 
     /**
