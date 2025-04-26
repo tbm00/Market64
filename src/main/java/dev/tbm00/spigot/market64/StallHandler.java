@@ -79,6 +79,7 @@ public class StallHandler {
 
         // Load stalls' claims
         for (Stall stall : stallsToLoad) {
+            if (stall==null) continue;
             stall.setClaim(gdHook.getClaimByUuid(stall.getWorld(), stall.getClaimUuid()));
         }
 
@@ -89,6 +90,7 @@ public class StallHandler {
             LocationClone shopLoc = shop.getBaseLocation();
 
             for (Stall stall : stallsToLoad) {
+                if (stall==null) continue;
                 Claim claim = stall.getClaim();
 
                 if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {

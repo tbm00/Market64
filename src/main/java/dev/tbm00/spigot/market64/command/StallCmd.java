@@ -122,6 +122,7 @@ public class StallCmd implements TabExecutor {
         Integer id=null;
         if (args.length<2) {
             for (Stall s : stallHandler.getStalls()) {
+                if (s==null) continue;
                 if (s.isRented() && s.getRenterUuid().equals(player.getUniqueId())) {
                     id = s.getId();
                     stall = s;
@@ -169,6 +170,7 @@ public class StallCmd implements TabExecutor {
         Integer id=null;
         if (args.length<2) {
             for (Stall s : stallHandler.getStalls()) {
+                if (s==null) continue;
                 if (s.isRented() && s.getRenterUuid().equals(player.getUniqueId())) {
                     id = s.getId();
                     stall = s;
@@ -219,15 +221,13 @@ public class StallCmd implements TabExecutor {
         } else if (args.length == 2) {
             if (args[0].equals("abandon") || args[0].equals("renew")) {
                 for (Stall stall : stallHandler.getStalls()) {
-                    if (stall==null) continue;
-                    if (!stall.isRented()) continue;
+                    if (stall==null || !stall.isRented()) continue;
                     if (sender instanceof Player && sender.getName().equalsIgnoreCase(stall.getRenterName()))
                         list.add(String.valueOf(stall.getId()));
                 }
             } else if (args[0].equals("rent")) {
                 for (Stall stall : stallHandler.getStalls()) {
-                    if (stall==null) continue;
-                    if (stall.isRented()) continue;
+                    if (stall==null || stall.isRented()) continue;
                     if (sender instanceof Player) list.add(String.valueOf(stall.getId()));
                 }
             }
