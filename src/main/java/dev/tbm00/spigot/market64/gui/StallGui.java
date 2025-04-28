@@ -125,7 +125,7 @@ public class StallGui {
             LocalDate ld = stall.getEvictionDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             lore.add("&7Renewal Date: &f"+ld.getMonth().toString()+ " "+ld.getDayOfMonth());
             LocalDate ld2 = stall.getLastTransaction().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            lore.add("&7Last Transcation: &f"+ld2.getMonth().toString()+ " "+ld2.getDayOfMonth());
+            lore.add("&7Last Transaction: &f"+ld2.getMonth().toString()+ " "+ld2.getDayOfMonth());
         } else {
             lore.add("&aAvailable to rent!");
         }
