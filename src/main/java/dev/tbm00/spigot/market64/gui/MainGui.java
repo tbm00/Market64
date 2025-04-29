@@ -40,8 +40,8 @@ public class MainGui {
         fillStalls();
 
         gui.updateTitle(label + gui.getCurrentPageNum() + "/" + gui.getPagesNum());
-        gui.disableAllInteractions();
         StaticUtil.disableAll(gui);
+        gui.disableAllInteractions();
         gui.open(player);
     }
 
@@ -69,58 +69,18 @@ public class MainGui {
         gui.setItem(6, 3, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
 
         // Previous Page
-        if (gui.getPagesNum()>=2) setGuiItemPageBack(gui, item, meta, lore, label);
-        else gui.setItem(6, 4, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
+        if (gui.getPagesNum()>=2) StaticUtil.setGuiItemPageBack(gui, item, meta, lore, label);
+        else gui.setItem(6, 5, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
 
         StaticUtil.setAboutItemInGui(gui, item, meta, lore);
 
         // Next Page
-        if (gui.getPagesNum()>=2)  setGuiItemPageNext(gui, item, meta, lore, label);
+        if (gui.getPagesNum()>=2) StaticUtil.setGuiItemPageNext(gui, item, meta, lore, label);
         else gui.setItem(6, 6, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
 
         gui.setItem(6, 7, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
         gui.setItem(6, 8, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
         gui.setItem(6, 9, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
-    }
-
-    /**
-     * Formats and sets the main GUI's footer's previous page button.
-     *
-     * @param gui the gui that will be sent to the player
-     * @param item holder for current item
-     * @param meta holder for current item's meta
-     * @param lore holder for current item's lore
-     * @param label holder for gui's title
-     */
-    public void setGuiItemPageBack(PaginatedGui gui, ItemStack item, ItemMeta meta, List<String> lore, String label) {
-        lore.add("&8-----------------------");
-        lore.add("&6Click to go to the previous page");
-        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&fPrevious Page"));
-        item.setItemMeta(meta);
-        item.setType(Material.STONE_BUTTON);
-        gui.setItem(6, 4, ItemBuilder.from(item).asGuiItem(event -> handlePageClick(event, gui, false, label)));
-        lore.clear();
-    }
-
-    /**
-     * Formats and sets the main GUI's footer's next page button.
-     *
-     * @param gui the gui that will be sent to the player
-     * @param item holder for current item
-     * @param meta holder for current item's meta
-     * @param lore holder for current item's lore
-     * @param label holder for gui's title
-     */
-    public void setGuiItemPageNext(PaginatedGui gui, ItemStack item, ItemMeta meta, List<String> lore, String label) {
-        lore.add("&8-----------------------");
-        lore.add("&6Click to go to the next page");
-        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&fNext Page"));
-        item.setItemMeta(meta);
-        item.setType(Material.STONE_BUTTON);
-        gui.setItem(6, 6, ItemBuilder.from(item).asGuiItem(event -> handlePageClick(event, gui, true, label)));
-        lore.clear();
     }
 
     /**
@@ -181,19 +141,6 @@ public class MainGui {
         else item.setAmount(stall.getId());
 
         gui.addItem(ItemBuilder.from(item).asGuiItem(event -> handleStallClick(event, sender, stall)));
-    }
-
-    /**
-     * Handles the event when a page button is clicked.
-     * 
-     * @param event the inventory click event
-     * @param next true to go to the next page; false to go to the previous page
-     */
-    private void handlePageClick(InventoryClickEvent event, PaginatedGui gui, boolean next, String label) {
-        event.setCancelled(true);
-        if (next) gui.next();
-        else gui.previous();
-        gui.updateTitle(label + gui.getCurrentPageNum() + "/" + gui.getPagesNum());
     }
 
     /**

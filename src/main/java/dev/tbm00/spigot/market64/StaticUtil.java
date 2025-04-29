@@ -21,6 +21,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
@@ -36,15 +37,20 @@ import dev.tbm00.spigot.market64.data.ConfigHandler;
 import dev.tbm00.spigot.market64.data.Stall;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.BaseGui;
+import dev.triumphteam.gui.guis.PaginatedGui;
 
 public class StaticUtil {
     private static Market64 javaPlugin;
     private static ConfigHandler configHandler;
 
+    public static final boolean EDITOR_PREVENTION = true;
+    public static final int MAX_AREA = 6400;
+    public static final int MAX_SIDE_LENGTH = 120;
     public static final int MAX_CONTAINED_CLAIMS = 2;
     public static final String MARKET_WORLD = "Tadow";
     public static final String MARKET_REGION = "market";
     public static final String PLAYER_PERM = "market64.player";
+    public static final String PATH_PERM = "market64.edit-path";
     public static final String ADMIN_PERM = "market64.admin";
 
     public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();
@@ -345,6 +351,35 @@ public class StaticUtil {
     }
 
     /**
+     * Formats and sets the main GUI's info item.
+     *
+     * @param gui the gui that will be sent to the player
+     * @param item holder for current item
+     * @param meta holder for current item's meta
+     * @param lore holder for current item's lore
+     */
+    public static void setAboutStallItemInGui(BaseGui gui, ItemStack item, ItemMeta meta, List<String> lore, Stall stall) {
+        lore.add("&8-----------------------");
+        lore.add("&fYou can rent shop stalls in our market!");
+        lore.add(" ");
+        lore.add("&7Some stalls are available for everyone,");
+        lore.add("&7some are only available for newbies.");
+        lore.add(" ");
+        lore.add("&7Your stall will automatically renew when");
+        lore.add("&7the time runs out, unless");
+        lore.add("&7- you don't keep enough money stored in your pocket,");
+        lore.add("&7- your stall's shops haven't had any recent transactions, or");
+        lore.add("&7- you're no longer a newbie, if it's a newbie stall.");
+        lore.add(" ");
+        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbout Stalls"));
+        item.setItemMeta(meta);
+        item.setType(Material.DARK_OAK_SIGN);
+        gui.setItem(6, 5, ItemBuilder.from(item).asGuiItem(event -> {event.setCancelled(true);}));
+        lore.clear();
+    }
+
+    /**
      * Executes a command as the console.
      * 
      * @param command the command to execute
@@ -411,6 +446,25 @@ public class StaticUtil {
             }
         }
         return current_play_ticks/20;
+    }
+
+    /**
+     * Checks if the GriefDefender claim is contained within the WorldGuard region
+     *
+     * @return true if contained, false otherwise
+     */
+    public static boolean isClaimTooLarge(Claim userClaim) {
+        if (userClaim==null) return false;
+
+        int len, wid, area;
+        len = userClaim.getLength();
+        wid = userClaim.getWidth();
+        if (len>MAX_SIDE_LENGTH || wid>MAX_SIDE_LENGTH) return true;
+
+        area = len*wid;
+        if (area>MAX_AREA) return true;
+
+        return false;
     }
 
     /**
@@ -493,5 +547,58 @@ public class StaticUtil {
             if (count>=MAX_CONTAINED_CLAIMS) return true;
         }
         return false;
+    }
+
+    /**
+     * Formats and sets the main GUI's footer's previous page button.
+     *
+     * @param gui the gui that will be sent to the player
+     * @param item holder for current item
+     * @param meta holder for current item's meta
+     * @param lore holder for current item's lore
+     * @param label holder for gui's title
+     */
+    public static void setGuiItemPageBack(PaginatedGui gui, ItemStack item, ItemMeta meta, List<String> lore, String label) {
+        lore.add("&8-----------------------");
+        lore.add("&6Click to go to the previous page");
+        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&fPrevious Page"));
+        item.setItemMeta(meta);
+        item.setType(Material.STONE_BUTTON);
+        gui.setItem(6, 4, ItemBuilder.from(item).asGuiItem(event -> handlePageClick(event, gui, false, label)));
+        lore.clear();
+    }
+
+    /**
+     * Formats and sets the main GUI's footer's next page button.
+     *
+     * @param gui the gui that will be sent to the player
+     * @param item holder for current item
+     * @param meta holder for current item's meta
+     * @param lore holder for current item's lore
+     * @param label holder for gui's title
+     */
+    public static void setGuiItemPageNext(PaginatedGui gui, ItemStack item, ItemMeta meta, List<String> lore, String label) {
+        lore.add("&8-----------------------");
+        lore.add("&6Click to go to the next page");
+        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&fNext Page"));
+        item.setItemMeta(meta);
+        item.setType(Material.STONE_BUTTON);
+        gui.setItem(6, 6, ItemBuilder.from(item).asGuiItem(event -> handlePageClick(event, gui, true, label)));
+        lore.clear();
+    }
+
+    /**
+     * Handles the event when a page button is clicked.
+     * 
+     * @param event the inventory click event
+     * @param next true to go to the next page; false to go to the previous page
+     */
+    private static void handlePageClick(InventoryClickEvent event, PaginatedGui gui, boolean next, String label) {
+        event.setCancelled(true);
+        if (next) gui.next();
+        else gui.previous();
+        gui.updateTitle(label + gui.getCurrentPageNum() + "/" + gui.getPagesNum());
     }
 }

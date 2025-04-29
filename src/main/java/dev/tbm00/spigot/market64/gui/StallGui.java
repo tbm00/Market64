@@ -41,8 +41,8 @@ public class StallGui {
         setupContent();
         setupFooter();
 
-        gui.disableAllInteractions();
         StaticUtil.disableAll(gui);
+        gui.disableAllInteractions();
         gui.open(player);
     }
 

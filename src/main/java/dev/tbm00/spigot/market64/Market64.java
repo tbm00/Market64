@@ -9,8 +9,7 @@ import dev.tbm00.spigot.market64.data.ConfigHandler;
 import dev.tbm00.spigot.market64.data.MySQLConnection;
 import dev.tbm00.spigot.market64.hook.*;
 import dev.tbm00.spigot.market64.listener.PlayerMovement;
-import dev.tbm00.spigot.market64.listener.ShopTransaction;
-import dev.tbm00.spigot.market64.listener.StallSign;
+import dev.tbm00.spigot.market64.listener.StallObjects;
 import dev.tbm00.spigot.market64.command.*;
 
 public class Market64 extends JavaPlugin {
@@ -53,10 +52,9 @@ public class Market64 extends JavaPlugin {
                 stallHandler = new StallHandler(this, mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
                 
                 // Register Listeners
-                getServer().getPluginManager().registerEvents(new ShopTransaction(this, stallHandler), this);
-                getServer().getPluginManager().registerEvents(new StallSign(this, stallHandler), this);
+                getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler), this);
                 getServer().getPluginManager().registerEvents(new PlayerMovement(), this);
-                //new ClaimHandler(this, wgHook);
+                //getServer().getPluginManager().registerEvents(new ClaimHandler(this, wgHook), this);
                 
                 // Register Commands
                 getCommand("stall").setExecutor(new StallCmd(this, stallHandler));
