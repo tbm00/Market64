@@ -173,7 +173,7 @@ public class VillagerGui {
             else lore.add("&7Stock: &e" + stock);
         if (shop.isAdminShop()) lore.add("&7Balance: &e$&e∞");
             else lore.add("&7Balance: &e$" + StaticUtil.formatInt(balance));
-        if (uuid!=null) lore.add("&7Owner: &f" + javaPlugin.getServer().getPlayer(uuid));
+        if (uuid!=null) lore.add("&7Owner: &f" + javaPlugin.getServer().getPlayer(uuid).getName());
         lore.add("&7"+shop.getBaseLocation().getWorldName()+": &f"+(int)shop.getBaseLocation().getX()+"&7, &f"
                     +(int)shop.getBaseLocation().getY()+"&7, &f"+(int)shop.getBaseLocation().getZ());
         lore.add("&8-----------------------");

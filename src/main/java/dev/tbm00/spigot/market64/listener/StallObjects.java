@@ -47,17 +47,17 @@ public class StallObjects implements Listener {
 
         if (villager.hasAI() || !villager.isInvulnerable()) return;
 
-        if (!StaticUtil.hasPermission(event.getPlayer(), StaticUtil.PLAYER_PERM)) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cNo permission!");
-            return;
-        }
-
         Claim claim = stallHandler.gdHook.getClaimByLocation(villager.getLocation());
         if (claim.isWilderness() || !claim.isAdminClaim()) return;
 
         for (Stall stall : stallHandler.getStalls()) {
             if (stall == null) continue;
             if (stall.getClaimUuid().equals(claim.getUniqueId())) {
+                event.setCancelled(true);
+                if (!StaticUtil.hasPermission(event.getPlayer(), StaticUtil.PLAYER_PERM)) {
+                    StaticUtil.sendMessage(event.getPlayer(), "&cNo permission!");
+                    return;
+                }
                 if (!stall.isRented()) {
                     new StallGui(javaPlugin, stallHandler, stall, event.getPlayer());
                     return;
@@ -111,7 +111,7 @@ public class StallObjects implements Listener {
         // [stall] <int id>
         // <int rentalDays> <int maxPlayDays>
         // <double initialPrice> <double renewalPrice>
-        // <int x>,<int y>,<int z>
+        // 
 
         int id;
         int rentalTimeDays, maxPlayTimeDays;
@@ -162,9 +162,9 @@ public class StallObjects implements Listener {
             return;
         }
 
-        storageLocCoords = event.getLine(3).trim();
+        storageLocCoords = signBlock.getX()+","+(signBlock.getY()-3)+","+signBlock.getZ();
         if (!storageLocCoords.matches("-?\\d+,-?\\d+,-?\\d+")) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid format on line 4, expecting '<int x>,<int y>,<int z>'");
+            StaticUtil.sendMessage(event.getPlayer(), "&cInvalid storageLocCoords format generated, expecting '<int x>,<int y>,<int z>'");
             return;
         }
 

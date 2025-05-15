@@ -70,7 +70,7 @@ public class MainGui {
 
         // Previous Page
         if (gui.getPagesNum()>=2) StaticUtil.setGuiItemPageBack(gui, item, meta, lore, label);
-        else gui.setItem(6, 5, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
+        else gui.setItem(6, 4, ItemBuilder.from(Material.BLACK_STAINED_GLASS_PANE).setName(" ").asGuiItem(event -> event.setCancelled(true)));
 
         StaticUtil.setAboutItemInGui(gui, item, meta, lore);
 

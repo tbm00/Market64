@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import dev.tbm00.spigot.market64.data.ConfigHandler;
 import dev.tbm00.spigot.market64.data.MySQLConnection;
 import dev.tbm00.spigot.market64.hook.*;
+import dev.tbm00.spigot.market64.listener.ClaimListener;
 import dev.tbm00.spigot.market64.listener.PlayerMovement;
 import dev.tbm00.spigot.market64.listener.StallObjects;
 import dev.tbm00.spigot.market64.command.*;
@@ -54,7 +55,7 @@ public class Market64 extends JavaPlugin {
                 // Register Listeners
                 getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler), this);
                 getServer().getPluginManager().registerEvents(new PlayerMovement(), this);
-                //getServer().getPluginManager().registerEvents(new ClaimHandler(this, wgHook), this);
+                //getServer().getPluginManager().registerEvents(new ClaimListener(this, wgHook), this);
                 
                 // Register Commands
                 getCommand("stall").setExecutor(new StallCmd(this, stallHandler));

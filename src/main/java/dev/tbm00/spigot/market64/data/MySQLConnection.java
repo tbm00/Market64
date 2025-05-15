@@ -92,6 +92,7 @@ public class MySQLConnection {
     //@SuppressWarnings("unused")
     private void clearOldTables() {
         String[] oldTables = {
+            "market64_stalls",
             "market64_shop",
             "shopstalls64_shop"
         };

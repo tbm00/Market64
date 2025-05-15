@@ -1,14 +1,9 @@
 package dev.tbm00.spigot.market64.listener;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
 
 import com.griefdefender.api.GriefDefender;
 import com.griefdefender.api.claim.Claim;
@@ -56,30 +51,16 @@ public class ClaimListener implements Listener {
     }
 
     /**
-     * Cancels the break block event if block is a path block
-     *
-     * @param event the ClaimExpansion
-     */
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        Block block = event.getBlock();
-
-        if (!block.getType().equals(Material.DIRT_PATH)) return;
-        if (!block.getWorld().equals(world)) return;
-        if (!block.getRelative(BlockFace.DOWN).getType().equals(Material.BEDROCK)) return;
-        if (wgRegion.contains(block.getX(), block.getY(), block.getZ()) && !event.getPlayer().hasPermission(StaticUtil.ADMIN_PERM)) {
-            StaticUtil.sendMessage(event.getPlayer(), "&cError: &fMarket path protection!");
-            event.setCancelled(true);
-            return;
-        }
-    }
-
-    /**
      * Cancels the creation event if the player has X claims within the region already
      *
      * @param event the CreateClaimEvent
      */
     public void onClaimCreation(CreateClaimEvent event) {
+
+        Player player = (Player) event.getSourceUser().getOnlinePlayer();
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.BYPASS_PERM))) { 
+            return;
+        }
 
         Claim claim = event.getClaim();
 
@@ -89,9 +70,18 @@ public class ClaimListener implements Listener {
         if (StaticUtil.isClaimTooLarge(claim)) {
             event.cancelled(true);
 
-            Player player = (Player) event.getSourceUser().getOnlinePlayer();
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &fClaim is too big for our market... please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
+            } else {
+                StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
+            }
+        }
+
+        if (StaticUtil.areSidesTooLarge(claim)) {
+            event.cancelled(true);
+
+            if (player != null && player instanceof Player) {
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
@@ -100,11 +90,20 @@ public class ClaimListener implements Listener {
         if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims())) {
             event.cancelled(true);
 
-            Player player = (Player) event.getSourceUser().getOnlinePlayer();
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &fYou cannot have more than "+StaticUtil.MAX_CONTAINED_CLAIMS+" claims in our market!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax market plots per player is "+StaticUtil.MAX_CONTAINED_CLAIMS+"... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
+            }
+        }
+
+        if (StaticUtil.isClaimPartlyNotContained(wgRegion, claim)) {
+            event.cancelled(true);
+
+            if (player != null && player instanceof Player) {
+                StaticUtil.sendMessage(player, "&4Error: &cCannot create claims that are partly not inside our market region!");
+            } else {
+                StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
         }
     }
@@ -116,6 +115,11 @@ public class ClaimListener implements Listener {
      */
     public void onClaimExpansion(ChangeClaimEvent event) {
 
+        Player player = (Player) event.getSourceUser().getOnlinePlayer();
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.BYPASS_PERM))) { 
+            return;
+        }
+
         Claim claim = event.getClaim();
 
         if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
@@ -124,20 +128,28 @@ public class ClaimListener implements Listener {
         if (StaticUtil.isClaimTooLarge(claim)) {
             event.cancelled(true);
 
-            Player player = (Player) event.getSourceUser().getOnlinePlayer();
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &fClaim is too big for our market... please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
-                StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
+                StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
         }
 
-        if (StaticUtil.isClaimPartlyContained(wgRegion, claim)) {
+        if (StaticUtil.areSidesTooLarge(claim)) {
             event.cancelled(true);
 
-            Player player = (Player) event.getSourceUser().getOnlinePlayer();
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &fYou cannot expand a claim into our market!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
+            } else {
+                StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
+            }
+        }
+
+        if (StaticUtil.isClaimPartlyNotContained(wgRegion, claim)) {
+            event.cancelled(true);
+
+            if (player != null && player instanceof Player) {
+                StaticUtil.sendMessage(player, "&4Error: &cCannot expand claims into our market!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }

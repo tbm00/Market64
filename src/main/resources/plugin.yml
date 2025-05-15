@@ -15,8 +15,8 @@ permissions:
   market64.player:
     description: Ability to use player commands
     default: true
-  market64.edit-path:
-    description: Ability to use break the market path
+  market64.bypass:
+    description: Ability to use bypass claiming restrictions
     default: op
   market64.admin:
     description: Ability to use admin commands

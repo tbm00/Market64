@@ -124,8 +124,10 @@ public class StallGui {
             lore.add("&7Rented By: &f"+stall.getRenterName());
             LocalDate ld = stall.getEvictionDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
             lore.add("&7Renewal Date: &f"+ld.getMonth().toString()+ " "+ld.getDayOfMonth());
-            LocalDate ld2 = stall.getLastTransaction().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            lore.add("&7Last Transaction: &f"+ld2.getMonth().toString()+ " "+ld2.getDayOfMonth());
+            if (stall.getLastTransaction()!=null) {
+                LocalDate ld2 = stall.getLastTransaction().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                lore.add("&7Last Transaction: &f"+ld2.getMonth().toString()+ " "+ld2.getDayOfMonth());
+            }
         } else {
             lore.add("&aAvailable to rent!");
         }
@@ -133,7 +135,7 @@ public class StallGui {
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&5Stall #" + stall.getId()));
         item.setItemMeta(meta);
-        gui.setItem(2, 5, ItemBuilder.from(item).asGuiItem(event -> {event.setCancelled(true);}));
+        gui.setItem(3, 3, ItemBuilder.from(item).asGuiItem(event -> {event.setCancelled(true);}));
         lore.clear();
     }
 
@@ -151,11 +153,12 @@ public class StallGui {
     public void setRentItemInGui(BaseGui gui, ItemStack item, ItemMeta meta, List<String> lore) {
         item.setType(Material.GOLDEN_SHOVEL);
         lore.add("&8-----------------------");
-        lore.add("&6Click to rent to this stall for $"+StaticUtil.formatInt(stall.getInitialPrice()));
+        lore.add("&6Click to rent to this stall for $"+StaticUtil.formatInt(stall.getInitialPrice())+" for "+stall.getRentalTimeDays()+" days");
+        lore.add("&6Then $"+StaticUtil.formatInt(stall.getRenewalPrice())+" every "+stall.getRentalTimeDays()+" days");
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dRent Stall #" + stall.getId()));
         item.setItemMeta(meta);
-        gui.setItem(4, 5, ItemBuilder.from(item).asGuiItem(event -> {handleRentClick(event);}));
+        gui.setItem(3, 6, ItemBuilder.from(item).asGuiItem(event -> {handleRentClick(event);}));
         lore.clear();
     }
 
@@ -166,7 +169,7 @@ public class StallGui {
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dRenew Stall #" + stall.getId()));
         item.setItemMeta(meta);
-        gui.setItem(4, 4, ItemBuilder.from(item).asGuiItem(event -> {handleRenewClick(event);}));
+        gui.setItem(3, 6, ItemBuilder.from(item).asGuiItem(event -> {handleRenewClick(event);}));
         lore.clear();
     }
 
@@ -177,7 +180,7 @@ public class StallGui {
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbandon Stall #" + stall.getId()));
         item.setItemMeta(meta);
-        gui.setItem(4, 6, ItemBuilder.from(item).asGuiItem(event -> {handleAbandonClick(event);}));
+        gui.setItem(3, 7, ItemBuilder.from(item).asGuiItem(event -> {handleAbandonClick(event);}));
         lore.clear();
     }
 

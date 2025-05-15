@@ -46,12 +46,12 @@ public class StaticUtil {
     public static final boolean EDITOR_PREVENTION = true;
     public static final int MAX_AREA = 6400;
     public static final int MAX_SIDE_LENGTH = 120;
-    public static final int MAX_CONTAINED_CLAIMS = 2;
+    public static final int MAX_CONTAINED_CLAIMS = 1;
     public static final String MARKET_WORLD = "Tadow";
-    public static final String MARKET_REGION = "market";
+    public static final String MARKET_REGION = "64_market";
     public static final String PLAYER_PERM = "market64.player";
-    public static final String PATH_PERM = "market64.edit-path";
     public static final String ADMIN_PERM = "market64.admin";
+    public static final String BYPASS_PERM = "market64.bypass";
 
     public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();
 
@@ -448,21 +448,26 @@ public class StaticUtil {
         return current_play_ticks/20;
     }
 
-    /**
-     * Checks if the GriefDefender claim is contained within the WorldGuard region
-     *
-     * @return true if contained, false otherwise
-     */
     public static boolean isClaimTooLarge(Claim userClaim) {
         if (userClaim==null) return false;
 
         int len, wid, area;
         len = userClaim.getLength();
         wid = userClaim.getWidth();
-        if (len>MAX_SIDE_LENGTH || wid>MAX_SIDE_LENGTH) return true;
 
         area = len*wid;
         if (area>MAX_AREA) return true;
+
+        return false;
+    }
+
+    public static boolean areSidesTooLarge(Claim userClaim) {
+        if (userClaim==null) return false;
+
+        int len, wid;
+        len = userClaim.getLength();
+        wid = userClaim.getWidth();
+        if (len>MAX_SIDE_LENGTH || wid>MAX_SIDE_LENGTH) return true;
 
         return false;
     }
@@ -478,15 +483,19 @@ public class StaticUtil {
         Vector3i northWest  = userClaim.getLesserBoundaryCorner();
         Vector3i southEast = userClaim.getGreaterBoundaryCorner();
 
+        double halfX = (northWest.getX()+southEast.getX())/2,
+                halfY = (northWest.getY()+southEast.getY())/2,
+                halfZ = (northWest.getZ()+southEast.getZ())/2;
+
         Vector3i[] claimedBlocks = new Vector3i[] {
-            new Vector3i(northWest.getX(),  100, northWest.getZ()),     // NW
-            new Vector3i(southEast.getX(), 100, northWest.getZ()),      // NE
-            new Vector3i(southEast.getX(), 100, southEast.getZ()),      // SE
-            new Vector3i(northWest.getX(),  100, southEast.getZ()),      // SW
-            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, southEast.getZ()), // S
-            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, northWest.getZ()), // N
-            new Vector3i(northWest.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // W
-            new Vector3i(southEast.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // E
+            new Vector3i(northWest.getX(),  northWest.getY(), northWest.getZ()),    // NW
+            new Vector3i(southEast.getX(), northWest.getY(), southEast.getZ()),     // SE
+            new Vector3i(southEast.getX(), halfY, northWest.getZ()),                // NE
+            new Vector3i(northWest.getX(),  halfY, southEast.getZ()),               // SW
+            new Vector3i(halfX,  halfY, southEast.getZ()),                  // S
+            new Vector3i(halfX,  halfY, northWest.getZ()),                  // N
+            new Vector3i(northWest.getX(),  halfY, halfZ),                  // W
+            new Vector3i(southEast.getX(),  halfY, halfZ),                  // E
         };
 
         for (Vector3i block : claimedBlocks) {
@@ -503,23 +512,25 @@ public class StaticUtil {
      *
      * @return true if contained, false otherwise
      */
-    public static boolean isClaimPartlyContained(ProtectedRegion wgRegion, Claim userClaim) {
+    public static boolean isClaimPartlyNotContained(ProtectedRegion wgRegion, Claim userClaim) {
         if (userClaim==null) return false;
-
-        if (!isClaimContained(wgRegion, userClaim)) return false;
 
         Vector3i northWest  = userClaim.getLesserBoundaryCorner();
         Vector3i southEast = userClaim.getGreaterBoundaryCorner();
 
+        double halfX = (northWest.getX()+southEast.getX())/2,
+                halfY = (northWest.getY()+southEast.getY())/2,
+                halfZ = (northWest.getZ()+southEast.getZ())/2;
+
         Vector3i[] claimedBlocks = new Vector3i[] {
-            new Vector3i(northWest.getX(),  100, northWest.getZ()),     // NW
-            new Vector3i(southEast.getX(), 100, northWest.getZ()),      // NE
-            new Vector3i(southEast.getX(), 100, southEast.getZ()),      // SE
-            new Vector3i(northWest.getX(),  100, southEast.getZ()),      // SW
-            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, southEast.getZ()), // S
-            new Vector3i(((northWest.getX()+southEast.getX())/2),  100, northWest.getZ()), // N
-            new Vector3i(northWest.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // W
-            new Vector3i(southEast.getX(),  100, ((northWest.getX()+southEast.getX())/2)), // E
+            new Vector3i(northWest.getX(),  northWest.getY(), northWest.getZ()),    // NW
+            new Vector3i(southEast.getX(), northWest.getY(), southEast.getZ()),     // SE
+            new Vector3i(southEast.getX(), halfY, northWest.getZ()),                // NE
+            new Vector3i(northWest.getX(),  halfY, southEast.getZ()),               // SW
+            new Vector3i(halfX,  halfY, southEast.getZ()),                  // S
+            new Vector3i(halfX,  halfY, northWest.getZ()),                  // N
+            new Vector3i(northWest.getX(),  halfY, halfZ),                  // W
+            new Vector3i(southEast.getX(),  halfY, halfZ),                  // E
         };
 
         for (Vector3i block : claimedBlocks) {

@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -24,7 +25,9 @@ import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -176,6 +179,17 @@ public class StallHandler {
         ensureCapacity(stallId);
         stalls.set(stallId, newStall);
 
+        Collection<Entity> coll = world.getNearbyEntities(signLocation, 4, 4, 4);
+        for (Entity ent : coll) {
+            if (ent instanceof Villager) {
+                Villager vill = (Villager) ent;
+                if (!vill.hasAI() && vill.isInvulnerable()) {
+                    vill.setCustomName("Unemployed Stall Keeper");
+                    break;
+                }
+            }
+        }
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -210,7 +224,7 @@ public class StallHandler {
         }
 
         for (Stall s : stalls) {
-            if (s.getRenterUuid().equals(player.getUniqueId())) {
+            if (s!=null && s.isRented() && s.getRenterUuid()!=null && s.getRenterUuid().equals(player.getUniqueId())) {
                 StaticUtil.sendMessage(player, "&cYou already have a stall!");
                 return false;
             }
@@ -245,6 +259,17 @@ public class StallHandler {
         Date dateBase = new Date();
         Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
+
+        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), 4, 4, 4);
+        for (Entity ent : coll) {
+            if (ent instanceof Villager) {
+                Villager vill = (Villager) ent;
+                if (!vill.hasAI() && vill.isInvulnerable()) {
+                    vill.setCustomName(player.getName()+"'s Stall Keeper");
+                    break;
+                }
+            }
+        }
 
         new BukkitRunnable() {
             @Override
@@ -490,6 +515,17 @@ public class StallHandler {
             else if (toInv)
                 StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated, money was returned, and items returned to your inventory..!");
             else StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated and money was returned!");
+        }
+
+        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), 4, 4, 4);
+        for (Entity ent : coll) {
+            if (ent instanceof Villager) {
+                Villager vill = (Villager) ent;
+                if (!vill.hasAI() && vill.isInvulnerable()) {
+                    vill.setCustomName("Unemployed Stall Keeper");
+                    break;
+                }
+            }
         }
 
         new BukkitRunnable() {
