@@ -55,7 +55,7 @@ public class Market64 extends JavaPlugin {
                 // Register Listeners
                 getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler), this);
                 getServer().getPluginManager().registerEvents(new PlayerMovement(), this);
-                //getServer().getPluginManager().registerEvents(new ClaimListener(this, wgHook), this);
+                getServer().getPluginManager().registerEvents(new ClaimListener(this, wgHook), this);
                 
                 // Register Commands
                 getCommand("stall").setExecutor(new StallCmd(this, stallHandler));

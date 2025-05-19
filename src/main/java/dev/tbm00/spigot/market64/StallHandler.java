@@ -25,6 +25,7 @@ import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -151,6 +152,8 @@ public class StallHandler {
             LocationClone shopLoc = shop.getBaseLocation();
 
             if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                String apperanceIdHolder = shop.getAppearanceId();
+                BlockState blockStateHolder = world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
                 String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
                 stallShops.put(locationStr, shop);
                 shop.setStoredBalance(0);
@@ -166,10 +169,12 @@ public class StallHandler {
                 shop.setBuyPrice(-1);
                 shop.setSellPrice(-1);
                 shop.setOwnerUniqueId(null);
-                shop.reset();
-                
-                world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).setType(Material.LODESTONE);
-                shop.setAppearanceId("Lodestone");
+                shop.reset(); // catch-all
+
+                shop.setAppearanceId(apperanceIdHolder);
+                Block block = world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ());
+                block.setType(blockStateHolder.getType());
+                block.setBlockData(blockStateHolder.getBlockData());
 
                 shopUuids.add(shop.getShopId());
                 continue shopLoop;
@@ -415,6 +420,10 @@ public class StallHandler {
         double totalRefund = 0;
         List<ItemStack> itemsFromShops = new ArrayList<>();
         for (Shop shop : stall.getShopMap().values()) {
+            LocationClone shopLoc = shop.getBaseLocation();
+            BlockState blockStateHolder = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
+            String apperanceIdHolder = shop.getAppearanceId();
+
             int stock = shop.getStock();
             int stacks = stock/64, leftovers = stock%64;
 
@@ -457,9 +466,11 @@ public class StallHandler {
             shop.setSellPrice(-1);
             shop.setOwnerUniqueId(null);
             shop.reset(); // catch-all
-
-            stall.getWorld().getBlockAt((int)shop.getBaseLocation().getX(), (int)shop.getBaseLocation().getY(), (int)shop.getBaseLocation().getZ()).setType(Material.LODESTONE);
-            shop.setAppearanceId("Lodestone");
+            
+            shop.setAppearanceId(apperanceIdHolder);
+            Block block = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ());
+            block.setType(blockStateHolder.getType());
+            block.setBlockData(blockStateHolder.getBlockData());
 
             // Post-log
             logShop(shop, ChatColor.GREEN, stock, stacks, leftovers);
