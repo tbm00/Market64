@@ -161,9 +161,12 @@ public class AdminCmd implements TabExecutor {
             + ChatColor.WHITE + "Rented: " + ChatColor.GRAY + stall.isRented() + " \n"
             + ChatColor.WHITE + "RenterUuid: " + ChatColor.GRAY + stall.getRenterUuid().toString() + " \n"
             + ChatColor.WHITE + "RenterName: " + ChatColor.GRAY + stall.getRenterName() + " \n"
-            + ChatColor.WHITE + "EvictionDate: " + ChatColor.GRAY + stall.getEvictionDate().toString() + " \n"
-            + ChatColor.WHITE + "LastTransaction: " + ChatColor.GRAY + stall.getLastTransaction().toString() + " \n"
+            + ChatColor.WHITE + "EvictionDate: " + ChatColor.GRAY + stall.getEvictionDate().toString()
         );
+
+        if (stall.getLastTransaction()!=null) {
+            sender.sendMessage(ChatColor.WHITE + "LastTransaction: " + ChatColor.GRAY + stall.getLastTransaction().toString());
+        }
 
         return true;
     }

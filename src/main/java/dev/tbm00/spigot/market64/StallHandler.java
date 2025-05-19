@@ -233,6 +233,11 @@ public class StallHandler {
                 return false;
             }
         }
+
+        if (stall.getPlayTimeDays()!=-1 && StaticUtil.getPlaytimeSeconds((OfflinePlayer)player)>(stall.getPlayTimeDays()*86400)) {
+            StaticUtil.sendMessage(player, "&cYou have too much playtime to rent that stall!");
+            return false;
+        }
         
         double price = stall.getInitialPrice();
         
@@ -318,9 +323,20 @@ public class StallHandler {
             if (!auto) StaticUtil.sendMessage(player, "&cThis stall is not yours!");
             return false;
         }
-        
-        double price = stall.getRenewalPrice();
 
+        Date dateBase = stall.getEvictionDate() != null ? 
+                        stall.getEvictionDate() : new Date();
+
+        Instant twoWeeksFromToday = (new Date()).toInstant().plus(2*stall.getRentalTimeDays(), ChronoUnit.DAYS);
+        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
+
+        if (newExpiry.isAfter(twoWeeksFromToday)) {
+            if (!auto) StaticUtil.sendMessage(player, "&cYou cannot renew your stall until the next payment period!");
+            else StaticUtil.sendMail(offlinePlayer, "&cYou cannot renew your stall until the next payment period!");
+            return false;
+        }
+
+        double price = stall.getRenewalPrice();
         if (!ecoHook.hasMoney(offlinePlayer, price)) {
             if (!auto) StaticUtil.sendMessage(player, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
             else StaticUtil.sendMail(offlinePlayer, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
@@ -330,10 +346,6 @@ public class StallHandler {
             return false;
         }
 
-        Date dateBase = stall.getEvictionDate() != null ? 
-                        stall.getEvictionDate() : new Date();
-
-        Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
         if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
@@ -478,18 +490,18 @@ public class StallHandler {
         String name = String.format("Stall #%d - %s - %s", stallId, stall.getRenterName(), dateStr);
         pm.setDisplayName(name);
         List<String> lore = new ArrayList<>();
-        lore.add("&7Stall: " + stallId);
-        lore.add("&7Renter: " + stall.getRenterName());
-        lore.add("&7Date: " + dateStr);
-        lore.add("&7Reason: " + reason);
-        lore.add("&7Money: $" + StaticUtil.formatInt(totalRefund));
+        lore.add("Stall: " + stallId);
+        lore.add("Renter: " + stall.getRenterName());
+        lore.add("Date: " + dateStr);
+        lore.add("Reason: " + reason);
+        lore.add("Money: $" + StaticUtil.formatInt(totalRefund));
         if (toInv && toStallStorage)
-            lore.add("&7Boxes: " + shulkerBoxes.size() + " to player's inv & stall's storage");
+            lore.add("Boxes: " + shulkerBoxes.size() + " to player's inv & stall's storage");
         else if (toInv)
-            lore.add("&7Boxes: " + shulkerBoxes.size() + " to player's inv");
+            lore.add("Boxes: " + shulkerBoxes.size() + " to player's inv");
         else if (toStallStorage)
-            lore.add("&7Boxes: " + shulkerBoxes.size() + " to stall's storage");
-        else lore.add("&7Boxes: " + shulkerBoxes.size() + " to null inv");
+            lore.add("Boxes: " + shulkerBoxes.size() + " to stall's storage");
+        else lore.add("Boxes: " + shulkerBoxes.size() + " to null inv");
         pm.setLore(lore);
         paper.setItemMeta(pm);
 
