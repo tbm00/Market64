@@ -21,7 +21,7 @@ mysql:
       threshold: 2 # 2 seconds
 
 lang:
-  prefix: "&8[&fStall&8] &7"
+  prefix: "&8[&fMarket&8] &7"
 
 feature:
   enabled: true

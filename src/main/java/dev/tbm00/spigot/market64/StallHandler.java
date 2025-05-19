@@ -179,7 +179,7 @@ public class StallHandler {
         ensureCapacity(stallId);
         stalls.set(stallId, newStall);
 
-        Collection<Entity> coll = world.getNearbyEntities(signLocation, 4, 4, 4);
+        Collection<Entity> coll = world.getNearbyEntities(signLocation, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS);
         for (Entity ent : coll) {
             if (ent instanceof Villager) {
                 Villager vill = (Villager) ent;
@@ -260,7 +260,7 @@ public class StallHandler {
         Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
-        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), 4, 4, 4);
+        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS);
         for (Entity ent : coll) {
             if (ent instanceof Villager) {
                 Villager vill = (Villager) ent;
@@ -517,7 +517,7 @@ public class StallHandler {
             else StaticUtil.sendMail(offlinePlayer, "&fYour stall was vacated and money was returned!");
         }
 
-        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), 4, 4, 4);
+        Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS);
         for (Entity ent : coll) {
             if (ent instanceof Villager) {
                 Villager vill = (Villager) ent;

@@ -3,10 +3,13 @@ package dev.tbm00.spigot.market64.gui;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -201,6 +204,18 @@ public class StallGui {
      */
     private void handleTPClick(InventoryClickEvent event) {
         event.setCancelled(true);
+        Collection<Entity> coll = stall.getWorld().getNearbyEntities(stall.getSignLocation(), StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS);
+        for (Entity ent : coll) {
+            if (ent instanceof Villager) {
+                Villager vill = (Villager) ent;
+                if (!vill.hasAI() && vill.isInvulnerable()) {
+                    StaticUtil.teleportPlayer(player, stall.getWorld(), vill.getLocation().getBlockX(), vill.getLocation().getBlockY(), vill.getLocation().getBlockZ());
+                    return;
+                }
+            }
+        }
+
+        // last resort
         StaticUtil.teleportPlayer(player, stall.getWorld(), stall.getSignLocation().getBlockX(), stall.getSignLocation().getBlockY(), stall.getSignLocation().getBlockZ());
     }
 

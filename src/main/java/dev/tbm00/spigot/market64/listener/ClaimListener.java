@@ -75,6 +75,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
+            return;
         }
 
         if (StaticUtil.areSidesTooLarge(claim)) {
@@ -85,6 +86,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
+            return;
         }
     
         if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims())) {
@@ -95,6 +97,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
+            return;
         }
 
         if (StaticUtil.isClaimPartlyNotContained(wgRegion, claim)) {
@@ -105,6 +108,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
+            return;
         }
     }
 
@@ -133,6 +137,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
+            return;
         }
 
         if (StaticUtil.areSidesTooLarge(claim)) {
@@ -143,6 +148,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
+            return;
         }
 
         if (StaticUtil.isClaimPartlyNotContained(wgRegion, claim)) {
@@ -153,6 +159,7 @@ public class ClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
+            return;
         }
     }
 }
