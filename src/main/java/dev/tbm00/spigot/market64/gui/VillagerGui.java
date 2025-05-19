@@ -246,6 +246,8 @@ public class VillagerGui {
             StaticUtil.sendMessage(player, "&cYour DS data pack is null");
             return;
         }
+
+        if (StaticUtil.EDITOR_PREVENTION) shop.setCurrentEditor(player.getUniqueId());
         
         stallHandler.dsHook.pl.runEventCommands("shop-open", player);
         Menu transactionMenu = stallHandler.dsHook.pl.getMenu("transaction");
@@ -282,13 +284,13 @@ public class VillagerGui {
             return;
         }
 
-        if (StaticUtil.EDITOR_PREVENTION) shop.setCurrentEditor(player.getUniqueId());
-
         stallHandler.dsHook.pl.getManager().getDataPack(player).setSelectedShop(shop);
         if (stallHandler.dsHook.pl.getManager().getDataPack(player)==null) {
             StaticUtil.sendMessage(player, "&cYour DS data pack is null");
             return;
         }
+
+        if (StaticUtil.EDITOR_PREVENTION) shop.setCurrentEditor(player.getUniqueId());
 
         stallHandler.dsHook.pl.runEventCommands("shop-edit", player);
         Menu editMenu = stallHandler.dsHook.pl.getMenu("edit");

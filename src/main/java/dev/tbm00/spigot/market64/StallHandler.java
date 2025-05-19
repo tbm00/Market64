@@ -167,6 +167,10 @@ public class StallHandler {
                 shop.setSellPrice(-1);
                 shop.setOwnerUniqueId(null);
                 shop.reset();
+                
+                world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).setType(Material.LODESTONE);
+                shop.setAppearanceId("Lodestone");
+
                 shopUuids.add(shop.getShopId());
                 continue shopLoop;
             }
@@ -441,6 +445,9 @@ public class StallHandler {
             shop.setSellPrice(-1);
             shop.setOwnerUniqueId(null);
             shop.reset(); // catch-all
+
+            stall.getWorld().getBlockAt((int)shop.getBaseLocation().getX(), (int)shop.getBaseLocation().getY(), (int)shop.getBaseLocation().getZ()).setType(Material.LODESTONE);
+            shop.setAppearanceId("Lodestone");
 
             // Post-log
             logShop(shop, ChatColor.GREEN, stock, stacks, leftovers);

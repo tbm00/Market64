@@ -209,14 +209,14 @@ public class StallGui {
             if (ent instanceof Villager) {
                 Villager vill = (Villager) ent;
                 if (!vill.hasAI() && vill.isInvulnerable()) {
-                    StaticUtil.teleportPlayer(player, stall.getWorld(), vill.getLocation().getBlockX(), vill.getLocation().getBlockY(), vill.getLocation().getBlockZ());
+                    StaticUtil.teleportPlayer(player, stall.getWorld(), vill.getLocation().getX(), vill.getLocation().getY()+1, vill.getLocation().getZ());
                     return;
                 }
             }
         }
 
         // last resort
-        StaticUtil.teleportPlayer(player, stall.getWorld(), stall.getSignLocation().getBlockX(), stall.getSignLocation().getBlockY(), stall.getSignLocation().getBlockZ());
+        StaticUtil.teleportPlayer(player, stall.getWorld(), stall.getSignLocation().getX(), stall.getSignLocation().getY(), stall.getSignLocation().getZ());
     }
 
     /**
