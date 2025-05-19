@@ -217,10 +217,10 @@ public class StaticUtil {
         Sign sign = (Sign) block.getState();
         try {
             sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
-            sign.getSide(Side.FRONT).setLine(1, translate("&aAvailable to rent"));
-            sign.getSide(Side.FRONT).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
+            sign.getSide(Side.FRONT).setLine(1, translate("&aAvailable!"));
+            sign.getSide(Side.FRONT).setLine(2, translate("&b$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
-                sign.getSide(Side.FRONT).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+                sign.getSide(Side.FRONT).setLine(3, translate("&bMax Playtime: "+stall.getPlayTimeDays()+"d"));
             else sign.getSide(Side.FRONT).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
@@ -229,10 +229,10 @@ public class StaticUtil {
 
         try {
             sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
-            sign.getSide(Side.BACK).setLine(1, translate("&aAvailable to rent"));
-            sign.getSide(Side.BACK).setLine(2, translate("&2$"+formatInt(stall.getInitialPrice())));
+            sign.getSide(Side.BACK).setLine(1, translate("&aAvailable!"));
+            sign.getSide(Side.BACK).setLine(2, translate("&b$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
-                sign.getSide(Side.BACK).setLine(3, translate("&cMax Playtime: "+stall.getPlayTimeDays()+"d"));
+                sign.getSide(Side.BACK).setLine(3, translate("&bMax Playtime: "+stall.getPlayTimeDays()+"d"));
             else sign.getSide(Side.BACK).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
@@ -260,6 +260,7 @@ public class StaticUtil {
             sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
             sign.getSide(Side.FRONT).setLine(1, translate("&bRented by"));
             sign.getSide(Side.FRONT).setLine(2, translate("&b"+stall.getRenterName()));
+            sign.getSide(Side.FRONT).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
             StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
@@ -269,6 +270,7 @@ public class StaticUtil {
             sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
             sign.getSide(Side.BACK).setLine(1, translate("&bRented by"));
             sign.getSide(Side.BACK).setLine(2, translate("&b"+stall.getRenterName()));
+            sign.getSide(Side.BACK).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
             StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
