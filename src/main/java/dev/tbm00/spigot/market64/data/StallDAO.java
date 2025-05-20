@@ -150,8 +150,7 @@ public class StallDAO {
         int rentalTime  = rs.getInt("rental_time");
         int maxPlayTime  = rs.getInt("max_play_time");
         boolean rented = rs.getBoolean("rented");
-        String ru = rs.getString("renter_uuid");
-        UUID renterUuid = ru != null ? UUID.fromString(ru) : null;
+        UUID renterUuid = rented ? UUID.fromString(rs.getString("renter_uuid")) : null;
         String renterName = rs.getString("renter_name");
         java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
@@ -171,7 +170,7 @@ public class StallDAO {
         ps.setInt(8, s.getRentalTimeDays());
         ps.setInt(9, s.getPlayTimeDays());
         ps.setBoolean(10, s.isRented());
-        ps.setString(11, s.getRenterUuid() != null ? s.getRenterUuid().toString() : null);
+        ps.setString(11, s.isRented() ? (s.getRenterUuid()!=null ? s.getRenterUuid().toString() : Bukkit.getServer().getOfflinePlayer(s.getRenterName()).getUniqueId().toString()) : null);
         ps.setString(12, s.getRenterName());
         ps.setTimestamp(13, toSqlTimestamp(s.getEvictionDate()));
         ps.setTimestamp(14, toSqlTimestamp(s.getLastTransaction()));

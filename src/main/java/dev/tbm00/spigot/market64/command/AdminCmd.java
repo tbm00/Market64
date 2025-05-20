@@ -158,15 +158,24 @@ public class AdminCmd implements TabExecutor {
             + ChatColor.YELLOW + "RenewalPrice: " + ChatColor.GRAY + "$" + StaticUtil.formatInt(stall.getRenewalPrice()) + " \n"
             + ChatColor.YELLOW + "RentalTime: " + ChatColor.GRAY + stall.getPlayTimeDays() + " days \n"
             + ChatColor.YELLOW + "MaxPlayTime: " + ChatColor.GRAY + stall.getRentalTimeDays() + " days \n"
-            + ChatColor.WHITE + "Rented: " + ChatColor.GRAY + stall.isRented() + " \n"
-            + ChatColor.WHITE + "RenterUuid: " + ChatColor.GRAY + stall.getRenterUuid().toString() + " \n"
-            + ChatColor.WHITE + "RenterName: " + ChatColor.GRAY + stall.getRenterName() + " \n"
-            + ChatColor.WHITE + "EvictionDate: " + ChatColor.GRAY + stall.getEvictionDate().toString()
+            + ChatColor.WHITE + "Rented: " + ChatColor.GRAY + stall.isRented()
         );
+
+        if (stall.getRenterUuid()!=null) {
+            sender.sendMessage(ChatColor.WHITE + "RenterUuid: " + ChatColor.GRAY + stall.getRenterUuid().toString());
+        } else sender.sendMessage(ChatColor.WHITE + "RenterUuid: " + ChatColor.GRAY + "null");
+
+        if (stall.getRenterName()!=null) {
+            sender.sendMessage(ChatColor.WHITE + "RenterName: " + ChatColor.GRAY + stall.getRenterName());
+        } else sender.sendMessage(ChatColor.WHITE + "RenterName: " + ChatColor.GRAY + "null");
+
+        if (stall.getEvictionDate()!=null) {
+            sender.sendMessage(ChatColor.WHITE + "EvictionDate: " + ChatColor.GRAY + stall.getEvictionDate().toString());
+        } else sender.sendMessage(ChatColor.WHITE + "EvictionDate: " + ChatColor.GRAY + "null");
 
         if (stall.getLastTransaction()!=null) {
             sender.sendMessage(ChatColor.WHITE + "LastTransaction: " + ChatColor.GRAY + stall.getLastTransaction().toString());
-        }
+        } else sender.sendMessage(ChatColor.WHITE + "LastTransaction: " + ChatColor.GRAY + "null");
 
         return true;
     }

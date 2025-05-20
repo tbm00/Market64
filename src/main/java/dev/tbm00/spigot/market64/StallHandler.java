@@ -274,6 +274,10 @@ public class StallHandler {
         Instant newExpiry = dateBase.toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
         stall.setEvictionDate(Date.from(newExpiry));
 
+        if (!dao.update(stall)) {
+            StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after filling stall " + stall.getId() +"!");
+        }
+
         Collection<Entity> coll = stall.getSignLocation().getWorld().getNearbyEntities(stall.getSignLocation(), StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS, StaticUtil.NEARBY_BLOCKS);
         for (Entity ent : coll) {
             if (ent instanceof Villager) {
@@ -291,10 +295,6 @@ public class StallHandler {
                 StaticUtil.StallSignSetUnavaliable(stall);
             }
         }.runTaskLater(javaPlugin, 4L);
-
-        if (!dao.update(stall)) {
-            StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after filling stall " + stall.getId() +"!");
-        }
 
         return true;
     }
@@ -314,10 +314,25 @@ public class StallHandler {
             return false;
         }
 
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+        if (!stall.isRented()) {
+            StaticUtil.log(ChatColor.RED, "Stall is not rented!");
+            return false;
+        }
+
+        OfflinePlayer offlinePlayer = null;
+        if (stall.getRenterUuid()!=null) {
+            offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+        } else {
+            offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterName());
+            stall.setRenterUuid(offlinePlayer.getUniqueId());
+        } if (offlinePlayer == null) {
+            StaticUtil.log(ChatColor.RED, "Couldn't find offline player by stall.getRenterUuid() or stall.getRenterName()!");
+            return false;
+        }
+    
         Player player = offlinePlayer.getPlayer();
         if (!auto && player==null) {
-            StaticUtil.log(ChatColor.RED, "Could not find online player by stall.getRenterUuid!");
+            StaticUtil.log(ChatColor.RED, "Could not find online player!");
             return false;
         }
 
@@ -353,12 +368,12 @@ public class StallHandler {
 
         stall.setEvictionDate(Date.from(newExpiry));
 
-        if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
-        else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
-
         if (!dao.update(stall)) {
             StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after renewing stall " + stall.getId() +"!");
         }
+
+        if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
+        else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
 
         return true;
     }
@@ -408,11 +423,25 @@ public class StallHandler {
             StaticUtil.log(ChatColor.RED, "Could not find stall!");
             return false;
         }
+
+        if (!stall.isRented()) {
+            StaticUtil.log(ChatColor.RED, "Stall is not rented!");
+            return false;
+        }
+
+        OfflinePlayer offlinePlayer = null;
+        if (stall.getRenterUuid()!=null) {
+            offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
+        } else {
+            offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterName());
+        } if (offlinePlayer == null) {
+            StaticUtil.log(ChatColor.RED, "Couldn't find offline player by stall.getRenterUuid() or stall.getRenterName()!");
+            return false;
+        }
     
-        OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
         Player player = offlinePlayer.getPlayer();
         if (!auto && player==null) {
-            StaticUtil.log(ChatColor.RED, "Could not find online player by stall.getRenterUuid!");
+            StaticUtil.log(ChatColor.RED, "Could not find online player!");
             return false;
         }
 
@@ -611,11 +640,13 @@ public class StallHandler {
      * @returns true on success, false if error
      */
     public boolean deleteStall(int stallId) {
-        if (!dao.delete(stallId)) return false;
         if (stallId >= 0 && stallId < stalls.size()) {
+            if (!dao.delete(stallId)) return false;
             stalls.set(stallId, null);
+            stalls.remove(stallId);
+            return true;
         }
-        return true;
+        return false;
     }
 
     /**
