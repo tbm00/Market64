@@ -641,10 +641,19 @@ public class StallHandler {
      */
     public boolean deleteStall(int stallId) {
         if (stallId >= 0 && stallId < stalls.size()) {
-            if (!dao.delete(stallId)) return false;
-            stalls.set(stallId, null);
-            stalls.remove(stallId);
+            StaticUtil.StallSignSetDeleted(stalls.get(stallId));
+
+            //new BukkitRunnable() {
+                //@Override
+                //public void run() {
+                    if (dao.delete(stallId)) {
+                        stalls.set(stallId, null);
+                        stalls.remove(stallId);
+                    //}
+                //}
+            //}.runTaskLater(javaPlugin, 4L);
             return true;
+            }
         }
         return false;
     }

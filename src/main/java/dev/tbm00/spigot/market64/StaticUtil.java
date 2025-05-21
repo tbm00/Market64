@@ -216,7 +216,7 @@ public class StaticUtil {
 
         Sign sign = (Sign) block.getState();
         try {
-            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall #" + stall.getId() +"]"));
             sign.getSide(Side.FRONT).setLine(1, translate("&aAvailable!"));
             sign.getSide(Side.FRONT).setLine(2, translate("&b$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
@@ -228,11 +228,50 @@ public class StaticUtil {
         }
 
         try {
-            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall #" + stall.getId() +"]"));
             sign.getSide(Side.BACK).setLine(1, translate("&aAvailable!"));
             sign.getSide(Side.BACK).setLine(2, translate("&b$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
                 sign.getSide(Side.BACK).setLine(3, translate("&bMax Playtime: "+stall.getPlayTimeDays()+"d"));
+            else sign.getSide(Side.BACK).setLine(3, translate(" "));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        return true;
+    }
+
+    public static boolean StallSignSetDeleted(Stall stall) {
+        Location loc = stall.getSignLocation();
+        if (loc==null) {
+            log(ChatColor.RED, "Could not find stall location for stall " + stall.getId());
+            return false;
+        }
+
+        Block block = loc.getBlock();
+        if (block==null || !(block.getState() instanceof Sign)) {
+            log(ChatColor.RED, "Could not find sign block at signLocation for stall " + stall.getId());
+            return false;
+        }
+
+        Sign sign = (Sign) block.getState();
+        try {
+            sign.getSide(Side.FRONT).setLine(0, translate("&4[Stall #" + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(2, translate("&c$"+formatInt(stall.getInitialPrice())));
+            if (stall.getPlayTimeDays()!=-1)
+                sign.getSide(Side.FRONT).setLine(3, translate("&c"+stall.getPlayTimeDays()+"d"));
+            else sign.getSide(Side.FRONT).setLine(3, translate(" "));
+            sign.update();
+        } catch (Exception e) {
+            StaticUtil.log(ChatColor.RED, "Caught exception setting front sign text!" + e.getMessage());
+        }
+
+        try {
+            sign.getSide(Side.BACK).setLine(0, translate("&4[Stall #" + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(2, translate("&c$"+formatInt(stall.getInitialPrice())));
+            if (stall.getPlayTimeDays()!=-1)
+                sign.getSide(Side.BACK).setLine(3, translate("&c"+stall.getPlayTimeDays()+"d"));
             else sign.getSide(Side.BACK).setLine(3, translate(" "));
             sign.update();
         } catch (Exception e) {
@@ -257,7 +296,7 @@ public class StaticUtil {
 
         Sign sign = (Sign) block.getState();
         try {
-            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(0, translate("&1[Stall #" + stall.getId() +"]"));
             sign.getSide(Side.FRONT).setLine(1, translate("&bRented by"));
             sign.getSide(Side.FRONT).setLine(2, translate("&b"+stall.getRenterName()));
             sign.getSide(Side.FRONT).setLine(3, translate(" "));
@@ -267,7 +306,7 @@ public class StaticUtil {
         }
 
         try {
-            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall " + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(0, translate("&1[Stall #" + stall.getId() +"]"));
             sign.getSide(Side.BACK).setLine(1, translate("&bRented by"));
             sign.getSide(Side.BACK).setLine(2, translate("&b"+stall.getRenterName()));
             sign.getSide(Side.BACK).setLine(3, translate(" "));
