@@ -54,6 +54,8 @@ public class AdminCmd implements TabExecutor {
                 return handleStatusCmd(sender, args);
             case "info":
                 return handleInfoCmd(sender);
+            case "update":
+                return handleUpdateCmd(sender, args);
             default:
                 return false;
         }
@@ -180,6 +182,59 @@ public class AdminCmd implements TabExecutor {
         return true;
     }
 
+    private boolean handleUpdateCmd(CommandSender sender, String[] args) {
+        if (args.length!=4) {
+            StaticUtil.sendMessage(sender, "&cUsage: /stalladmin update <id> <param> <value>");
+            return true;
+        } 
+
+        int id;
+        try {
+            id = Integer.valueOf(args[1]);
+        } catch (Exception e) {
+            StaticUtil.sendMessage(sender, "&cCould not parse ID '"+args[1]+"'!");
+            return true;
+        }
+
+        Stall stall = stallHandler.getStall(id);
+        if (stall==null) {
+            StaticUtil.sendMessage(sender, "&cFailed find stall "+id+"!");
+            return true;
+        }
+
+        String param = args[2].toLowerCase(), value = args[3];
+
+        try {
+        switch (param) {
+            case "initialprice":
+                stall.setInitialPrice(Double.valueOf(value));
+                break;
+            case "renewalprice":
+                stall.setRenewalPrice(Double.valueOf(value));
+                break;
+            case "rentaltimedays":
+                stall.setRentalTimeDays((int)Integer.valueOf(value));
+                break;
+            case "playtimedays":
+                stall.setPlayTimeDays((int)Integer.valueOf(value));
+                break;
+            default:
+                break;
+        }
+        } catch (Exception e) {
+            StaticUtil.sendMessage(sender, "&cCaught exception updating "+param+" to "+value+"!");
+            e.printStackTrace();
+            return true;
+        }
+
+        if (stallHandler.updateStallInDAO(id)) {
+            StaticUtil.sendMessage(sender, "&aUpdated stall #"+id+"'s "+param+" to "+value+"!");
+        } else {
+            StaticUtil.sendMessage(sender, "&cUpdated stall locally but not in SQL..! Stall #"+id+"'s "+param+" to "+value+"!");
+        }
+        return true;
+    }
+
     private boolean handleInfoCmd(CommandSender sender) {
         stallHandler.getShopInfo((Player) sender);
         return true;
@@ -194,7 +249,7 @@ public class AdminCmd implements TabExecutor {
         if (StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
             if (args.length == 1) {
                 list.clear();
-                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask"};
+                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update"};
                 for (String n : subCmds) {
                     if (n!=null && n.startsWith(args[0])) 
                         list.add(n);
@@ -205,6 +260,14 @@ public class AdminCmd implements TabExecutor {
                 for (Stall stall : stallHandler.getStalls()) {
                     if (stall==null) continue;
                     list.add(String.valueOf(stall.getId()));
+                }
+            }
+            else if (args.length == 3 && args[2].equalsIgnoreCase("update")) {
+                list.clear();
+                String[] subCmds = new String[]{"initialPrice","renewalPrice","rentalTimeDays","playTimeDays"};
+                for (String n : subCmds) {
+                    if (n!=null && n.startsWith(args[0])) 
+                        list.add(n);
                 }
             }
         }

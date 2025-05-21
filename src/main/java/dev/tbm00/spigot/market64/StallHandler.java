@@ -755,6 +755,11 @@ public class StallHandler {
         return dao;
     }
 
+    /** Return dao object for accessing database. */
+    public boolean updateStallInDAO(int stallId) {
+        return dao.update(stalls.get(stallId));
+    }
+
     private void ensureCapacity(int id) {
         while (stalls.size() <= id) stalls.add(null);
     }
