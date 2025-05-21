@@ -229,6 +229,9 @@ public class AdminCmd implements TabExecutor {
 
         if (stallHandler.updateStallInDAO(id)) {
             StaticUtil.sendMessage(sender, "&aUpdated stall #"+id+"'s "+param+" to "+value+"!");
+            if (!stall.isRented()) {
+                StaticUtil.StallSignSetAvaliable(stall);
+            }
         } else {
             StaticUtil.sendMessage(sender, "&cUpdated stall locally but not in SQL..! Stall #"+id+"'s "+param+" to "+value+"!");
         }
@@ -262,11 +265,11 @@ public class AdminCmd implements TabExecutor {
                     list.add(String.valueOf(stall.getId()));
                 }
             }
-            else if (args.length == 3 && args[2].equalsIgnoreCase("update")) {
+            else if (args.length == 3 && args[0].equalsIgnoreCase("update")) {
                 list.clear();
                 String[] subCmds = new String[]{"initialPrice","renewalPrice","rentalTimeDays","playTimeDays"};
                 for (String n : subCmds) {
-                    if (n!=null && n.startsWith(args[0])) 
+                    if (n!=null && n.startsWith(args[2])) 
                         list.add(n);
                 }
             }

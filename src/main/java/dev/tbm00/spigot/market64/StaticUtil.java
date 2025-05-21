@@ -258,6 +258,7 @@ public class StaticUtil {
         Sign sign = (Sign) block.getState();
         try {
             sign.getSide(Side.FRONT).setLine(0, translate("&4[Stall #" + stall.getId() +"]"));
+            sign.getSide(Side.FRONT).setLine(1, translate(" "));
             sign.getSide(Side.FRONT).setLine(2, translate("&c$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
                 sign.getSide(Side.FRONT).setLine(3, translate("&c"+stall.getPlayTimeDays()+"d"));
@@ -269,6 +270,7 @@ public class StaticUtil {
 
         try {
             sign.getSide(Side.BACK).setLine(0, translate("&4[Stall #" + stall.getId() +"]"));
+            sign.getSide(Side.BACK).setLine(1, translate(" "));
             sign.getSide(Side.BACK).setLine(2, translate("&c$"+formatInt(stall.getInitialPrice())));
             if (stall.getPlayTimeDays()!=-1)
                 sign.getSide(Side.BACK).setLine(3, translate("&c"+stall.getPlayTimeDays()+"d"));

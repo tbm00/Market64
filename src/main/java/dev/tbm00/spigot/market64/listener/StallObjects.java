@@ -50,6 +50,11 @@ public class StallObjects implements Listener {
         Claim claim = stallHandler.gdHook.getClaimByLocation(villager.getLocation());
         if (claim.isWilderness() || !claim.isAdminClaim()) return;
 
+        if (!StaticUtil.hasPermission(event.getPlayer(), StaticUtil.PLAYER_PERM)) {
+            StaticUtil.sendMessage(event.getPlayer(), "&cNo permission!");
+            return;
+        }
+
         for (Stall stall : stallHandler.getStalls()) {
             if (stall == null) continue;
             if (stall.getClaimUuid().equals(claim.getUniqueId())) {
