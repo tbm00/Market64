@@ -67,6 +67,12 @@ public class ClaimListener implements Listener {
         if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
         if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
 
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.DENIED_PERM))) { 
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cYou are blacklisted from the market..!");
+            return;
+        }
+
         if (StaticUtil.isClaimTooLarge(claim)) {
             event.cancelled(true);
 
@@ -128,6 +134,12 @@ public class ClaimListener implements Listener {
 
         if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
         if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
+
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.DENIED_PERM))) { 
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cYou are blacklisted from the market..!");
+            return;
+        }
 
         if (StaticUtil.isClaimTooLarge(claim)) {
             event.cancelled(true);
