@@ -10,7 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -155,7 +155,7 @@ public class StallDAO {
         java.util.Date eviction = toUtilDate(rs.getTimestamp("eviction_date"));
         java.util.Date lastTransaction  = toUtilDate(rs.getTimestamp("last_transaction_date"));
 
-        return new Stall(id, claimUuid, null, Collections.emptySet(), new ConcurrentHashMap<>(), world, signLocation, storageCoords, initialPrice, renewalPrice, 
+        return new Stall(id, claimUuid, null, Collections.emptySet(), world, signLocation, storageCoords, initialPrice, renewalPrice, 
                         rentalTime, maxPlayTime, rented, renterUuid, renterName, eviction, lastTransaction);
     }
 

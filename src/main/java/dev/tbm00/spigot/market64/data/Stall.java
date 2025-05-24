@@ -4,21 +4,21 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+//import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Location;
 import org.bukkit.World;
 
 import com.griefdefender.api.claim.Claim;
 
-import xzot1k.plugins.ds.api.objects.Shop;
+//import xzot1k.plugins.ds.api.objects.Shop;
 
 public class Stall {
     private int id;
     private UUID claimUuid;
     private Claim claim;                                                       // not stored in mysql
     private Set<UUID> shopUuids = new HashSet<>();                             // not stored in mysql
-    private ConcurrentHashMap<String, Shop> shops = new ConcurrentHashMap<>(); // not stored in mysql
+    //private ConcurrentHashMap<String, Shop> shops = new ConcurrentHashMap<>(); // not stored in mysql
     private World world; // stored in mysql as String world.getName()
     private Location signLocation; // coords stored in mysql as String "x,y,z"
     private int[] storageCoords; // x,y,z
@@ -56,7 +56,7 @@ public class Stall {
                  UUID claimUuid,
                  Claim claim,
                  Set<UUID> shopUuids,
-                 ConcurrentHashMap<String, Shop> shops,
+                 //ConcurrentHashMap<String, Shop> shops,
                  World world,
                  Location signLocation,
                  int[] storageCoords,
@@ -73,7 +73,7 @@ public class Stall {
         this.claimUuid = claimUuid;
         this.claim = claim;
         this.shopUuids = new HashSet<>(shopUuids);
-        this.shops = shops;
+        //this.shops = shops;
         this.world = world;
         this.signLocation = signLocation;
         this.storageCoords = storageCoords;
@@ -129,17 +129,18 @@ public class Stall {
     }
 
     /** @return the shop map */
-    public ConcurrentHashMap<String, Shop> getShopMap() {
+    /*public ConcurrentHashMap<String, Shop> getShopMap() {
         return shops;
-    }
+    }*/
     /** @param shops the shop map to set */
-    public void setShopMap(ConcurrentHashMap<String, Shop> shops) {
+    /*public void setShopMap(ConcurrentHashMap<String, Shop> shops) {
         this.shops = shops;
-    }
+    }*/
     /** @return the shop map */
-    public void addShopToMap(Shop shop, String locationStr) {
+    /*public void addShopToMap(Shop shop, String locationStr) {
         shops.put(locationStr, shop);
-    }
+    }*/
+    
 
     /** @return the world */
     public World getWorld() {

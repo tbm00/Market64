@@ -45,7 +45,7 @@ public class VillagerGui {
         this.stallHandler = stallHandler;
         this.player = player;
         this.stall = stall;
-        this.dsMap = new ArrayList<>(stall.getShopMap().entrySet());
+        this.dsMap = new ArrayList<>(stallHandler.getShopMap(stall).entrySet());
         label = "Stall #"+stall.getId()+" - ";
 
         gui = new PaginatedGui(6, 45, "Stall #"+stall.getId());

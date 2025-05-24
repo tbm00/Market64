@@ -155,7 +155,6 @@ public class AdminCmd implements TabExecutor {
 
         sender.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall " + id + ChatColor.DARK_PURPLE + " ---\n"
             + ChatColor.YELLOW + "Claim: " + ChatColor.GRAY + stall.getClaimUuid().toString() + " \n"
-            + ChatColor.YELLOW + "Shops: " + ChatColor.GRAY + stall.getShopMap().size() + " \n"
             + ChatColor.YELLOW + "ShopUuids: " + ChatColor.GRAY + stall.getShopUuids().size() + " \n"
             + ChatColor.YELLOW + "World: " + ChatColor.GRAY + stall.getWorld().getName() + " \n"
             + ChatColor.YELLOW + "Sign: " + ChatColor.GRAY + stall.getSignLocation().getBlockX()+","+stall.getSignLocation().getBlockY()+","+stall.getSignLocation().getBlockZ() + " \n"

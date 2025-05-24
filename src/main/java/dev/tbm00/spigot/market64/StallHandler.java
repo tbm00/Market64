@@ -98,8 +98,8 @@ public class StallHandler {
                 Claim claim = stall.getClaim();
 
                 if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
-                    String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
-                    stall.addShopToMap(shop, locationStr);
+                    //String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
+                    //stall.addShopToMap(shop, locationStr);
                     stall.addShopUuidToSet(shop.getShopId());
                     continue shopLoop;
                 }
@@ -181,7 +181,7 @@ public class StallHandler {
             }
         }
         
-        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, stallShops, world, signLocation, storageCoords, initialPrice, renewalPrice,
+        Stall newStall = new Stall(stallId, claimUuid, claim, shopUuids, world, signLocation, storageCoords, initialPrice, renewalPrice,
                                     rentalTime, maxPlayTime, false, null, null, null, null);
             
         if (!dao.insert(newStall)) return false;
@@ -254,7 +254,7 @@ public class StallHandler {
             return false;
         }
 
-        for (Shop shop : stall.getShopMap().values()) {
+        for (Shop shop : getShopMap(stall).values()) {
             // Pre-log
             logShop(shop, ChatColor.YELLOW, shop.getStock(), -1, -1);
 
@@ -448,7 +448,7 @@ public class StallHandler {
         // Capture shops' stored contents and reset data
         double totalRefund = 0;
         List<ItemStack> itemsFromShops = new ArrayList<>();
-        for (Shop shop : stall.getShopMap().values()) {
+        for (Shop shop : getShopMap(stall).values()) {
             LocationClone shopLoc = shop.getBaseLocation();
             BlockState blockStateHolder = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
             String apperanceIdHolder = shop.getAppearanceId();
@@ -804,5 +804,27 @@ public class StallHandler {
 
     private void ensureCapacity(int id) {
         while (stalls.size() <= id) stalls.add(null);
+    }
+
+    public ConcurrentHashMap<String, Shop> getShopMap(Stall stall) {
+        if (stall == null) return null;
+
+        Claim claim = stall.getClaim();
+        if (claim == null) return null;
+
+        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+        ConcurrentHashMap<String, Shop> stallShops = new ConcurrentHashMap<>();
+
+        for (Shop shop : dsMap.values()) {
+            LocationClone shopLoc = shop.getBaseLocation();
+
+            if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
+                stallShops.put(locationStr, shop);
+            }
+        }
+
+
+        return stallShops;
     }
 }
