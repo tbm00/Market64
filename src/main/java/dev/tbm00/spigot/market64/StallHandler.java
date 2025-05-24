@@ -827,4 +827,33 @@ public class StallHandler {
 
         return stallShops;
     }
+
+    public void rescanDisplayShops() {
+        for (Stall stall : stalls) {
+            if (stall == null) continue;
+
+            Claim claim = stall.getClaim();
+            if (claim == null) continue;
+
+            ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+            Set<UUID> shopUuids = new HashSet<>();
+
+            UUID renterUuid = null;
+            if (stall.isRented() && stall.getRenterUuid()!=null) {
+                renterUuid = stall.getRenterUuid();
+            }
+
+            for (Shop shop : dsMap.values()) {
+                LocationClone shopLoc = shop.getBaseLocation();
+
+                if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                    shopUuids.add(shop.getShopId());
+                    if (renterUuid!=null) {
+                        shop.setOwnerUniqueId(renterUuid);
+                    }
+                }
+            }
+            stall.setShopUuids(shopUuids);
+        }
+    }
 }

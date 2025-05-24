@@ -57,7 +57,9 @@ public class AdminCmd implements TabExecutor {
             case "update":
                 return handleUpdateCmd(sender, args);
             case "rescanclaims":
-                return handleRescanCmd(sender);
+                return handleRescanClaimsCmd(sender);
+            case "rescanshops":
+                return handleRescanShopsCmd(sender);
             case "lowerstoragelocations":
                 return handleStorageCmd(sender);
             default:
@@ -241,12 +243,17 @@ public class AdminCmd implements TabExecutor {
         return true;
     }
 
-    private boolean handleRescanCmd(CommandSender sender) {
+    private boolean handleRescanClaimsCmd(CommandSender sender) {
         if (!stallHandler.rescanClaims()) {
             StaticUtil.sendMessage(sender, "&cAt least 1 stall failed when updating in SQL!");
         } else {
             StaticUtil.sendMessage(sender, "&aRescaned stall regions and reloaded!");
         } return true;
+    }
+
+    private boolean handleRescanShopsCmd(CommandSender sender) {
+        stallHandler.rescanDisplayShops();
+        return true;
     }
 
     private boolean handleStorageCmd(CommandSender sender) {
@@ -271,7 +278,7 @@ public class AdminCmd implements TabExecutor {
         if (StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
             if (args.length == 1) {
                 list.clear();
-                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update","rescanClaims","lowerStorageLocations"};
+                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update","rescanClaims","rescanShops","lowerStorageLocations"};
                 for (String n : subCmds) {
                     if (n!=null && n.startsWith(args[0])) 
                         list.add(n);
