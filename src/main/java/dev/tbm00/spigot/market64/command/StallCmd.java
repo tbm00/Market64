@@ -105,12 +105,11 @@ public class StallCmd implements TabExecutor {
 
         if (stallHandler.fillStall(id, player)) {
             Stall stall = stallHandler.getStall(id);
-            StaticUtil.sendMessage(sender, "&aRented stall "+id+"! &eYour stall will automatically renew after 7 days ("+stall.getEvictionDate()+" ), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
-            return true;
+            StaticUtil.sendMessage(sender, "&aRented stall "+id+"! &eYour stall will automatically renew after "+stall.getRentalTimeDays()+" days ("+stall.getEvictionDate()+"), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
         } else {
             StaticUtil.sendMessage(sender, "&aFailed to rent stall "+id+"!");
-            return true;
         }
+        return true;
     }
 
     private boolean handleRenewCmd(CommandSender sender, String[] args) {
@@ -157,7 +156,11 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        stallHandler.renewStall(id, false);
+        if (stallHandler.renewStall(stall.getId(), false)) {
+            StaticUtil.sendMessage(player, "&aRenewed stall "+stall.getId()+"! &eYour stall will automatically renew on "+stall.getEvictionDate()+", as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
+        } else {
+            StaticUtil.sendMessage(player, "&aFailed to renew stall!");
+        }
         return true;
     }
 
@@ -205,7 +208,11 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        stallHandler.clearStall(id, "player abandoned", false);
+        if (stallHandler.clearStall(id, "player abandoned", false)) {
+            StaticUtil.sendMessage(sender, "&aAbandoned stall "+id+"!");
+        } else {
+            StaticUtil.sendMessage(sender, "&aFailed to abandon stall "+id+"!");
+        }
         return true;
     }
 

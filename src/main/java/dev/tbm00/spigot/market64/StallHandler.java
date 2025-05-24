@@ -214,7 +214,7 @@ public class StallHandler {
      *  - Charges the player the initial price
      *  - Resets the each shop's data:
      *      - Sets shop owner to player.getUniqueId()
-     *      - Sets shop buyPrice to 960 and sellPrice to 360
+     *      - Sets shop buyPrice to 100 and sellPrice to 50
      *  - Sets stalls' 'rented' attribute to true
      *  - Sets stalls' eviction date to 7 days from the present
      *  - Updates internal Stall object
@@ -259,8 +259,8 @@ public class StallHandler {
             logShop(shop, ChatColor.YELLOW, shop.getStock(), -1, -1);
 
             shop.setOwnerUniqueId(player.getUniqueId());
-            shop.setBuyPrice(960);
-            shop.setSellPrice(360);
+            shop.setBuyPrice(100);
+            shop.setSellPrice(50);
 
             // Post-log
             logShop(shop, ChatColor.GREEN, shop.getStock(), -1, -1);
@@ -641,7 +641,7 @@ public class StallHandler {
      */
     public boolean deleteStall(int stallId) {
         if (stallId >= 0 && stallId < stalls.size()) {
-            StaticUtil.StallSignSetDeleted(stalls.get(stallId));
+            StaticUtil.StallSignSetDeleted(getStall(stallId));
 
             //new BukkitRunnable() {
                 //@Override
@@ -656,6 +656,38 @@ public class StallHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * @returns true on success, false if error
+     */
+    public boolean rescanClaims() {
+        int errorCount = 0;
+        for (Stall stall : stalls) {
+            Claim claim = gdHook.getClaimByLocation(stall.getSignLocation());
+            stall.setClaimUuid(claim.getUniqueId());
+            stall.setClaim(claim);
+            if (!dao.update(stall)) errorCount++;
+        }
+        reloadAll();
+        if (errorCount!=0) return false;
+        else return true;
+    }
+
+    /**
+     * @returns true on success, false if error
+     */
+    public boolean lowerStorageCoords() {
+        int errorCount = 0;
+        for (Stall stall : stalls) {
+            int[] coords = stall.getStorageCoords();
+            coords[1] += -3;
+            stall.setStorageCoords(coords);
+            if (!dao.update(stall)) errorCount++;
+        }
+        reloadAll();
+        if (errorCount!=0) return false;
+        else return true;
     }
 
     /**
@@ -683,17 +715,19 @@ public class StallHandler {
             Instant sinceDate = dateBase.toInstant().minus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
 
             if (lastTransaction!=null && lastTransaction.before(Date.from(sinceDate))) {
-                clearStall(id, "no sales", true);
-                StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for "+stall.getRentalTimeDays()+" days!");
-                ++count;
-                continue;
+                if (clearStall(id, "no sales", true)) {
+                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for "+stall.getRentalTimeDays()+" days!");
+                    ++count;
+                    continue;
+                }
             }
 
             if (stall.getPlayTimeDays()!=-1 && StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
-                clearStall(id, "max playtime", true);
-                StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
-                ++count;
-                continue;
+                if (clearStall(id, "max playtime", true)) {
+                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
+                    ++count;
+                    continue;
+                }
             }
 
             Date evictionDate = stall.getEvictionDate();
@@ -705,11 +739,14 @@ public class StallHandler {
                 }
                 continue;
             } else if ((new Date()).after(evictionDate)) {
-                if (!renewStall(id, true)) {
-                    clearStall(id, "missed payment", true);
-                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment! (funds were not in your pocket)");
-                    ++count;
+                if (renewStall(stall.getId(), false)) {
                     continue;
+                } else {
+                    if (clearStall(id, "missed payment", true)) {
+                        StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment! (funds were not in your pocket)");
+                        ++count;
+                        continue;
+                    }
                 }
             }
         }
@@ -740,18 +777,14 @@ public class StallHandler {
         } StaticUtil.log(color, "-");
     }
 
-    /** Get a stall by ID (from cache or from DB if absent). */
+    /** Get a stall by ID. */
     public Stall getStall(int id) {
-        if (id < 0) return null;
-        if (id < stalls.size() && stalls.get(id) != null) {
-            return stalls.get(id);
+        for (Stall stall : stalls) {
+            if (stall.getId()==id) {
+                return stall;
+            }
         }
-        Stall s = dao.loadById(id);
-        if (s != null) {
-            ensureCapacity(id);
-            stalls.set(id, s);
-        }
-        return s;
+        return null;
     }
 
     /** Return unmodifiable view of all internal cached stalls. */
@@ -766,7 +799,7 @@ public class StallHandler {
 
     /** Return dao object for accessing database. */
     public boolean updateStallInDAO(int stallId) {
-        return dao.update(stalls.get(stallId));
+        return dao.update(getStall(stallId));
     }
 
     private void ensureCapacity(int id) {

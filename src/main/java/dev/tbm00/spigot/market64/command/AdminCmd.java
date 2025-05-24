@@ -56,6 +56,10 @@ public class AdminCmd implements TabExecutor {
                 return handleInfoCmd(sender);
             case "update":
                 return handleUpdateCmd(sender, args);
+            case "rescanclaims":
+                return handleRescanCmd(sender);
+            case "lowerstoragelocations":
+                return handleStorageCmd(sender);
             default:
                 return false;
         }
@@ -91,7 +95,7 @@ public class AdminCmd implements TabExecutor {
             return true;
         }
 
-        if (stallHandler.clearStall(id, "staff eviction", false)) {
+        if (stallHandler.clearStall(id, "staff eviction", true)) {
             StaticUtil.sendMessage(sender, "&aEvicted stall "+id+"!");
             return true;
         } else {
@@ -238,6 +242,22 @@ public class AdminCmd implements TabExecutor {
         return true;
     }
 
+    private boolean handleRescanCmd(CommandSender sender) {
+        if (!stallHandler.rescanClaims()) {
+            StaticUtil.sendMessage(sender, "&cAt least 1 stall failed when updating in SQL!");
+        } else {
+            StaticUtil.sendMessage(sender, "&aRescaned stall regions and reloaded!");
+        } return true;
+    }
+
+    private boolean handleStorageCmd(CommandSender sender) {
+        if (!stallHandler.lowerStorageCoords()) {
+            StaticUtil.sendMessage(sender, "&cAt least 1 stall failed when updating in SQL!");
+        } else {
+            StaticUtil.sendMessage(sender, "&aLowered stall storage locations and reloaded!");
+        } return true;
+    }
+
     private boolean handleInfoCmd(CommandSender sender) {
         stallHandler.getShopInfo((Player) sender);
         return true;
@@ -252,7 +272,7 @@ public class AdminCmd implements TabExecutor {
         if (StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
             if (args.length == 1) {
                 list.clear();
-                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update"};
+                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update","rescanClaims","lowerStorageLocations"};
                 for (String n : subCmds) {
                     if (n!=null && n.startsWith(args[0])) 
                         list.add(n);

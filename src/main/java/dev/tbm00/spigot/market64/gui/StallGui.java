@@ -227,7 +227,11 @@ public class StallGui {
     private void handleRentClick(InventoryClickEvent event) {
         event.setCancelled(true);
         gui.close(player);
-        stallHandler.fillStall(stall.getId(), player);
+        if (stallHandler.fillStall(stall.getId(), player)) {
+            StaticUtil.sendMessage(player, "&aRented stall "+stall.getId()+"! &eYour stall will automatically renew after "+stall.getRentalTimeDays()+" days ("+stall.getEvictionDate()+"), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
+        } else {
+            StaticUtil.sendMessage(player, "&aFailed to rent stall!");
+        }
     }
 
     /**
@@ -238,7 +242,11 @@ public class StallGui {
     private void handleRenewClick(InventoryClickEvent event) {
         event.setCancelled(true);
         gui.close(player);
-        stallHandler.renewStall(stall.getId(), false);
+        if (stallHandler.renewStall(stall.getId(), false)) {
+            StaticUtil.sendMessage(player, "&aRenewed stall "+stall.getId()+"! &eYour stall will automatically renew on "+stall.getEvictionDate()+", as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
+        } else {
+            StaticUtil.sendMessage(player, "&aFailed to renew stall!");
+        }
     }
 
     /**
@@ -249,6 +257,10 @@ public class StallGui {
     private void handleAbandonClick(InventoryClickEvent event) {
         event.setCancelled(true);
         gui.close(player);
-        stallHandler.clearStall(stall.getId(), "player abandoned", false);
+        if (stallHandler.clearStall(stall.getId(), "player abandoned", false)) {
+            StaticUtil.sendMessage(player, "&aAbandoned stall "+stall.getId()+"!");
+        } else {
+            StaticUtil.sendMessage(player, "&aFailed to abandon stall "+stall.getId()+"!");
+        }
     }
 }
