@@ -44,8 +44,8 @@ public class StaticUtil {
     private static ConfigHandler configHandler;
 
     public static final boolean EDITOR_PREVENTION = true;
-    public static final int MAX_AREA = 6400;
-    public static final int MAX_SIDE_LENGTH = 120;
+    public static final int MAX_AREA = 3600;
+    public static final int MAX_SIDE_LENGTH = 72;
     public static final int MAX_CONTAINED_CLAIMS = 1;
     public static final String MARKET_WORLD = "Tadow";
     public static final String MARKET_REGION = "64_market";
