@@ -73,6 +73,18 @@ public class ClaimListener implements Listener {
             return;
         }
 
+        if (claim.isSubdivision()) {
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cCannot make subdivision claims in the market..!");
+            return;
+        }
+
+        if (claim.isTown()) {
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cCannot make town claims in the market..!");
+            return;
+        }
+
         if (StaticUtil.isClaimTooLarge(claim)) {
             event.cancelled(true);
 
@@ -138,6 +150,18 @@ public class ClaimListener implements Listener {
         if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.DENIED_PERM))) { 
             event.cancelled(true);
             StaticUtil.sendMessage(player, "&4Error: &cYou are blacklisted from the market..!");
+            return;
+        }
+
+        if (claim.isSubdivision()) {
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cCannot make subdivision claims in the market..!");
+            return;
+        }
+
+        if (claim.isTown()) {
+            event.cancelled(true);
+            StaticUtil.sendMessage(player, "&4Error: &cCannot make town claims in the market..!");
             return;
         }
 
