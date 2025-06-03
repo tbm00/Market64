@@ -49,11 +49,14 @@ public class StaticUtil {
     public static final int MAX_CONTAINED_CLAIMS = 1;
     public static final String MARKET_WORLD = "Tadow";
     public static final String MARKET_REGION = "64_market";
+    public static final String VOIDCITY_WORLD = "exo_Xalia_the_end";
+    public static final String VOIDCITY_REGION = "voidcity";
     public static final String PLAYER_PERM = "market64.player";
     public static final String ADMIN_PERM = "market64.admin";
     public static final String MOD_PERM = "market64.mod";
     public static final String BYPASS_PERM = "market64.bypass";
-    public static final String DENIED_PERM = "group.cannotaccess";
+    public static final String MARKET_DENIED_PERM = "group.cannotaccess";
+    public static final String VOIDCITY_DENIED_PERM = "group.novoidcity";
     public static final int NEARBY_BLOCKS = 5;
 
     public static final List<String> pendingTeleports = new CopyOnWriteArrayList<>();

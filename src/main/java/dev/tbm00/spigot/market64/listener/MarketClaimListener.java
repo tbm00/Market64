@@ -17,11 +17,11 @@ import dev.tbm00.spigot.market64.Market64;
 import dev.tbm00.spigot.market64.StaticUtil;
 import dev.tbm00.spigot.market64.hook.WGHook;
 
-public class ClaimListener implements Listener {
+public class MarketClaimListener implements Listener {
     World world = null;
     ProtectedRegion wgRegion = null;
 
-    public ClaimListener(Market64 javaPlugin, WGHook wgHook) {
+    public MarketClaimListener(Market64 javaPlugin, WGHook wgHook) {
         world = javaPlugin.getServer().getWorld(StaticUtil.MARKET_WORLD);
         if (world == null) {
             StaticUtil.log(ChatColor.RED, "Required world " + StaticUtil.MARKET_WORLD + " is not loaded on the server!");
@@ -67,7 +67,7 @@ public class ClaimListener implements Listener {
         if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
         if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
 
-        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.DENIED_PERM))) { 
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.MARKET_DENIED_PERM))) { 
             event.cancelled(true);
             StaticUtil.sendMessage(player, "&4Error: &cYou are blacklisted from the market..!");
             return;
@@ -147,7 +147,7 @@ public class ClaimListener implements Listener {
         if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
         if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
 
-        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.DENIED_PERM))) { 
+        if (player != null && player instanceof Player && (player.hasPermission(StaticUtil.MARKET_DENIED_PERM))) { 
             event.cancelled(true);
             StaticUtil.sendMessage(player, "&4Error: &cYou are blacklisted from the market..!");
             return;
