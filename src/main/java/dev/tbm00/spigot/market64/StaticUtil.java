@@ -51,6 +51,7 @@ public class StaticUtil {
     public static final String MARKET_REGION = "64_market";
     public static final String PLAYER_PERM = "market64.player";
     public static final String ADMIN_PERM = "market64.admin";
+    public static final String MOD_PERM = "market64.mod";
     public static final String BYPASS_PERM = "market64.bypass";
     public static final String DENIED_PERM = "group.cannotaccess";
     public static final int NEARBY_BLOCKS = 5;

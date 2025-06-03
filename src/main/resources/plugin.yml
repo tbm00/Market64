@@ -21,3 +21,6 @@ permissions:
   market64.admin:
     description: Ability to use admin commands
     default: op
+  market64.mod:
+    description: Ability to use mod commands
+    default: op

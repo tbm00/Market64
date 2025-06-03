@@ -33,7 +33,7 @@ public class AdminCmd implements TabExecutor {
      */
     @Override
     public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
-        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+        if (!(StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM) || StaticUtil.hasPermission(sender, StaticUtil.MOD_PERM)) ) {
             StaticUtil.sendMessage(sender, "&cNo permission!");
             return true;
         }
@@ -52,8 +52,8 @@ public class AdminCmd implements TabExecutor {
                 return handleDailyTaskCmd(sender);
             case "status":
                 return handleStatusCmd(sender, args);
-            case "info":
-                return handleInfoCmd(sender);
+            case "shopinfo":
+                return handleShopInfoCmd(sender);
             case "update":
                 return handleUpdateCmd(sender, args);
             case "rescanclaims":
@@ -75,10 +75,9 @@ public class AdminCmd implements TabExecutor {
      */
     private boolean handleHelpCmd(CommandSender sender) {
         sender.sendMessage(ChatColor.DARK_PURPLE + "--- " + ChatColor.LIGHT_PURPLE + "Stall Admin Commands" + ChatColor.DARK_PURPLE + " ---\n"
-            + ChatColor.WHITE + "/stalladmin delete <id>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/stalladmin status <id>" + ChatColor.GRAY + " \n"
+            + ChatColor.WHITE + "/stalladmin shopInfo <player>" + ChatColor.GRAY + " \n"
             + ChatColor.WHITE + "/stalladmin evict <id>" + ChatColor.GRAY + " \n"
-            + ChatColor.WHITE + "/stalladmin dailyTask" + ChatColor.GRAY + " "
         );
         return true;
     }
@@ -107,12 +106,21 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleDailyTaskCmd(CommandSender sender) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
         int count = stallHandler.dailyTask();
         StaticUtil.sendMessage(sender, "&aEvicted "+count+" stalls!");
         return true;
     }
 
     private boolean handleDeleteCmd(CommandSender sender, String[] args) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
         if (args.length<2) {
             StaticUtil.sendMessage(sender, "&cYou must provide a stall ID to delete!");
             return false;
@@ -188,6 +196,11 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleUpdateCmd(CommandSender sender, String[] args) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
         if (args.length!=4) {
             StaticUtil.sendMessage(sender, "&cUsage: /stalladmin update <id> <param> <value>");
             return true;
@@ -244,6 +257,11 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleRescanClaimsCmd(CommandSender sender) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
         if (!stallHandler.rescanClaims()) {
             StaticUtil.sendMessage(sender, "&cAt least 1 stall failed when updating in SQL!");
         } else {
@@ -252,11 +270,21 @@ public class AdminCmd implements TabExecutor {
     }
 
     private boolean handleRescanShopsCmd(CommandSender sender) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
         stallHandler.rescanDisplayShops();
         return true;
     }
 
     private boolean handleStorageCmd(CommandSender sender) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
         if (!stallHandler.lowerStorageCoords()) {
             StaticUtil.sendMessage(sender, "&cAt least 1 stall failed when updating in SQL!");
         } else {
@@ -264,7 +292,7 @@ public class AdminCmd implements TabExecutor {
         } return true;
     }
 
-    private boolean handleInfoCmd(CommandSender sender) {
+    private boolean handleShopInfoCmd(CommandSender sender) {
         stallHandler.getShopInfo((Player) sender);
         return true;
     }
@@ -278,7 +306,7 @@ public class AdminCmd implements TabExecutor {
         if (StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
             if (args.length == 1) {
                 list.clear();
-                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update","rescanClaims","rescanShops","lowerStorageLocations"};
+                String[] subCmds = new String[]{"help","delete","status","evict","dailyTask","update","rescanClaims","rescanShops","lowerStorageLocations","shopInfo"};
                 for (String n : subCmds) {
                     if (n!=null && n.startsWith(args[0])) 
                         list.add(n);
@@ -299,8 +327,23 @@ public class AdminCmd implements TabExecutor {
                         list.add(n);
                 }
             }
+        } else if (StaticUtil.hasPermission(sender, StaticUtil.MOD_PERM)) {
+            if (args.length == 1) {
+                list.clear();
+                String[] subCmds = new String[]{"help","status","evict","shopInfo"};
+                for (String n : subCmds) {
+                    if (n!=null && n.startsWith(args[0])) 
+                        list.add(n);
+                }
+            }
+            else if (args.length == 2) {
+                list.clear();
+                for (Stall stall : stallHandler.getStalls()) {
+                    if (stall==null) continue;
+                    list.add(String.valueOf(stall.getId()));
+                }
+            }
         }
-
         return list;
     }
 }
