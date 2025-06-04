@@ -739,7 +739,7 @@ public class StallHandler {
                 }
                 continue;
             } else if ((new Date()).after(evictionDate)) {
-                if (renewStall(stall.getId(), false)) {
+                if (renewStall(stall.getId(), true)) {
                     continue;
                 } else {
                     if (clearStall(id, "missed payment", true)) {
