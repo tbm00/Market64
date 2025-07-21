@@ -746,18 +746,20 @@ public class StallHandler {
             } else if ((new Date()).after(evictionDate)) {
                 ConcurrentHashMap<String,Shop> shopMap = getShopMap(stall);
                 int shop_count = shopMap.size();
-                int empty_count = 0;
-                for (Shop shop : getShopMap(stall).values()) {
-                    ItemStack prototype = shop.getShopItem();
-                    if (prototype==null || prototype.getType()!=Material.AIR || prototype.getAmount()<1) {
-                        empty_count++;
+                if (shop_count != 0) {
+                    int empty_count = 0;
+                    for (Shop shop : getShopMap(stall).values()) {
+                        ItemStack prototype = shop.getShopItem();
+                        if (prototype==null || prototype.getType()==Material.AIR) {
+                            empty_count++;
+                        }
                     }
-                }
-                if ((empty_count / shop_count) > .5) {
-                    if (clearStall(id, "majority empty", true)) {
-                        StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since the majority of its shops were empty! ("+empty_count+"/"+shop_count+")");
-                        ++count;
-                        continue;
+                    if ((empty_count / shop_count) > .5) {
+                        if (clearStall(id, "majority empty", true)) {
+                            StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since the majority of its shops were empty! ("+empty_count+"/"+shop_count+")");
+                            ++count;
+                            continue;
+                        }
                     }
                 }
 
