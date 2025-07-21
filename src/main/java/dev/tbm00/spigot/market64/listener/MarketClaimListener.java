@@ -89,7 +89,7 @@ public class MarketClaimListener implements Listener {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MARKET_MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
@@ -100,18 +100,18 @@ public class MarketClaimListener implements Listener {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MARKET_MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
             return;
         }
     
-        if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims())) {
+        if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims(), StaticUtil.MARKET_MAX_CONTAINED_CLAIMS)) {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax market plots per player is "+StaticUtil.MAX_CONTAINED_CLAIMS+"... It will increase as the market grows -- please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax market plots per player is "+StaticUtil.MARKET_MAX_CONTAINED_CLAIMS+"... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }
@@ -169,7 +169,7 @@ public class MarketClaimListener implements Listener {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot area is currently "+StaticUtil.MARKET_MAX_AREA+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
@@ -180,7 +180,7 @@ public class MarketClaimListener implements Listener {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax plot side length is currently "+StaticUtil.MARKET_MAX_SIDE_LENGTH+" blocks... It will increase as the market grows -- please leave room for others!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }

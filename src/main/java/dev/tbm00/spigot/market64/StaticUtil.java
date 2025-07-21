@@ -44,9 +44,9 @@ public class StaticUtil {
     private static ConfigHandler configHandler;
 
     public static final boolean EDITOR_PREVENTION = true;
-    public static final int MAX_AREA = 3600;
-    public static final int MAX_SIDE_LENGTH = 72;
-    public static final int MAX_CONTAINED_CLAIMS = 1;
+    public static final int MARKET_MAX_AREA = 4000;
+    public static final int MARKET_MAX_SIDE_LENGTH = 80;
+    public static final int MARKET_MAX_CONTAINED_CLAIMS = 1;
     public static final String MARKET_WORLD = "Tadow";
     public static final String MARKET_REGION = "64_market";
     public static final String VOIDCITY_WORLD = "exo_Xalia_the_end";
@@ -419,14 +419,12 @@ public class StaticUtil {
         lore.add("&8-----------------------");
         lore.add("&fYou can rent shop stalls in our market!");
         lore.add(" ");
-        lore.add("&7Some stalls are available for everyone,");
-        lore.add("&7some are only available for newbies.");
-        lore.add(" ");
         lore.add("&7Your stall will automatically renew when");
         lore.add("&7the time runs out, unless");
         lore.add("&7- you don't keep enough money stored in your pocket,");
         lore.add("&7- your stall's shops haven't had any recent transactions, or");
-        lore.add("&7- you're no longer a newbie, if it's a newbie stall.");
+        lore.add("&7- more than half of your stall's shops are empty (no-item).");
+        // lore.add("&7- your playtime exceeds the max playtime for that stall.");
         lore.add(" ");
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbout Stalls"));
@@ -448,14 +446,12 @@ public class StaticUtil {
         lore.add("&8-----------------------");
         lore.add("&fYou can rent shop stalls in our market!");
         lore.add(" ");
-        lore.add("&7Some stalls are available for everyone,");
-        lore.add("&7some are only available for newbies.");
-        lore.add(" ");
         lore.add("&7Your stall will automatically renew when");
         lore.add("&7the time runs out, unless");
         lore.add("&7- you don't keep enough money stored in your pocket,");
         lore.add("&7- your stall's shops haven't had any recent transactions, or");
-        lore.add("&7- you're no longer a newbie, if it's a newbie stall.");
+        lore.add("&7- more than half of your stall's shops are empty (no-item).");
+        // lore.add("&7- your playtime exceeds the max playtime for that stall.");
         lore.add(" ");
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbout Stalls"));
@@ -542,7 +538,7 @@ public class StaticUtil {
         wid = userClaim.getWidth();
 
         area = len*wid;
-        if (area>MAX_AREA) return true;
+        if (area>MARKET_MAX_AREA) return true;
 
         return false;
     }
@@ -553,7 +549,7 @@ public class StaticUtil {
         int len, wid;
         len = userClaim.getLength();
         wid = userClaim.getWidth();
-        if (len>MAX_SIDE_LENGTH || wid>MAX_SIDE_LENGTH) return true;
+        if (len>MARKET_MAX_SIDE_LENGTH || wid>MARKET_MAX_SIDE_LENGTH) return true;
 
         return false;
     }
@@ -633,7 +629,7 @@ public class StaticUtil {
      *
      * @return true if contained, false otherwise
      */
-    public static boolean hasMaxContainedClaims(ProtectedRegion wgRegion, Set<Claim> userClaims) {
+    public static boolean hasMaxContainedClaims(ProtectedRegion wgRegion, Set<Claim> userClaims, int max) {
         if (userClaims==null || userClaims.isEmpty()) return false;
 
         int count = -1;
@@ -641,7 +637,7 @@ public class StaticUtil {
             if (isClaimContained(wgRegion, claim)) {
                 count++;
             }
-            if (count>=MAX_CONTAINED_CLAIMS) return true;
+            if (count>=max) return true;
         }
         return false;
     }

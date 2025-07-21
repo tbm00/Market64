@@ -74,9 +74,9 @@ public class StallCmd implements TabExecutor {
         sender.sendMessage(ChatColor.DARK_AQUA + "--- " + ChatColor.AQUA + "Stall Commands" + ChatColor.DARK_AQUA + " ---\n"
             + ChatColor.WHITE + "/stalls" + ChatColor.GRAY + " Open the main Stall GUI\n"
             + ChatColor.WHITE + "/stall <id>" + ChatColor.GRAY + " Open the stall's GUI\n"
-            + ChatColor.WHITE + "/stall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automaticaly if you have enough money in your pocket\n"
-            + ChatColor.WHITE + "/stall renew [id]" + ChatColor.GRAY + " Renew your stall early, if [id] is not null, it will abandon your only stall\n"
-            + ChatColor.WHITE + "/stall abandon [id]" + ChatColor.GRAY + " Abandon your stall, if [id] is not null, it will abandon your only stall\n"
+            + ChatColor.WHITE + "/stall rent <id>" + ChatColor.GRAY + " Rent a stall for a week, renews automatically if you have enough money in your pocket\n"
+            + ChatColor.WHITE + "/stall renew" + ChatColor.GRAY + " Renew your stall early\n"
+            + ChatColor.WHITE + "/stall abandon" + ChatColor.GRAY + " Abandon your stall\n"
         );
         return true;
     }

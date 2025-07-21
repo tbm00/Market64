@@ -85,11 +85,11 @@ public class VoidCityClaimListener implements Listener {
             return;
         }
     
-        if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims())) {
+        if (StaticUtil.hasMaxContainedClaims(wgRegion, event.getSourceUser().getPlayerData().getClaims(), 1)) {
             event.cancelled(true);
 
             if (player != null && player instanceof Player) {
-                StaticUtil.sendMessage(player, "&4Error: &cMax VoidCity plots per player is "+StaticUtil.MAX_CONTAINED_CLAIMS+"..!");
+                StaticUtil.sendMessage(player, "&4Error: &cMax VoidCity plots per player is "+1+"..!");
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimCreation listener!");
             }

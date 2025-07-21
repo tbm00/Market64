@@ -693,12 +693,19 @@ public class StallHandler {
     /**
      * Process (in order, for each stall): 
      *  - If stall is active, check if the renewal date has passed.
-     *     - If the renewal date has passed, remove the renewal price from OfflinePlayer's vault balance
-     *        - If that fails (ie they don't have enough money), evict the stall
-     *     - If the renewal date hasn't passed, check if the stall has had a transaction in the last week (using last transaction date)
-     *        - If it has been a week since the transaction date, evict the stall
-     *        - If it hasn'tbeen a week since the transaction date, check if the player has more than X weeks of playtime
-     *           - If renter has more than X weeks of playtime, evict the stall
+     *     - check if lastTranscation is within last 3*rentalTimeDays
+     *        - if not, evict & continue
+     *     - check if ownerPlaytime is less than max
+     *        - if not, evict & continue
+     *     - check if eviction/renewal date exists
+     *        - if not, initialize it & continue
+     *        - if so, check if date has passed
+     *           - if not, continue
+     *           - if so, check if stall's shops are majority empty
+     *              - if so, evict & continue
+     *              - if not, try automatic renewal payment
+     *                 - if fails, evict & continue
+     *                 - else, continue
      */
     public int dailyTask() {
         int count = 0;
@@ -710,13 +717,11 @@ public class StallHandler {
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
 
             Date lastTransaction = stall.getLastTransaction();
-
             Date dateBase = new Date();
-            Instant sinceDate = dateBase.toInstant().minus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
-
+            Instant sinceDate = dateBase.toInstant().minus(3*stall.getRentalTimeDays(), ChronoUnit.DAYS);
             if (lastTransaction!=null && lastTransaction.before(Date.from(sinceDate))) {
                 if (clearStall(id, "no sales", true)) {
-                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for "+stall.getRentalTimeDays()+" days!");
+                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for at least "+3*stall.getRentalTimeDays()+" days!");
                     ++count;
                     continue;
                 }
@@ -724,7 +729,7 @@ public class StallHandler {
 
             if (stall.getPlayTimeDays()!=-1 && StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
                 if (clearStall(id, "max playtime", true)) {
-                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you had the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
+                    StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you exceed the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
                     ++count;
                     continue;
                 }
@@ -735,10 +740,27 @@ public class StallHandler {
                 Instant newExpiry = (new Date()).toInstant().plus(stall.getRentalTimeDays(), ChronoUnit.DAYS);
                 stall.setEvictionDate(Date.from(newExpiry));
                 if (!dao.update(stall)) {
-                    StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after setting null->current+7d eviction date for stall " + stall.getId() +"!");
+                    StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after setting null->current+stall.getRentalTimeDays() eviction date for stall " + stall.getId() +"!");
                 }
                 continue;
             } else if ((new Date()).after(evictionDate)) {
+                ConcurrentHashMap<String,Shop> shopMap = getShopMap(stall);
+                int shop_count = shopMap.size();
+                int empty_count = 0;
+                for (Shop shop : getShopMap(stall).values()) {
+                    ItemStack prototype = shop.getShopItem();
+                    if (prototype==null || prototype.getType()!=Material.AIR || prototype.getAmount()<1) {
+                        empty_count++;
+                    }
+                }
+                if ((empty_count / shop_count) > .5) {
+                    if (clearStall(id, "majority empty", true)) {
+                        StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since the majority of its shops were empty! ("+empty_count+"/"+shop_count+")");
+                        ++count;
+                        continue;
+                    }
+                }
+
                 if (renewStall(stall.getId(), true)) {
                     continue;
                 } else {
