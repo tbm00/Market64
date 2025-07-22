@@ -357,13 +357,34 @@ public class StallHandler {
         }
 
         double price = stall.getRenewalPrice();
-        if (!ecoHook.hasMoney(offlinePlayer, price)) {
-            if (!auto) StaticUtil.sendMessage(player, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
-            else StaticUtil.sendMail(offlinePlayer, "&cYou don't have enough money to renew your stall! ($"+StaticUtil.formatInt(price)+")");
-            return false;
-        } else if (!ecoHook.removeMoney(offlinePlayer, price)) {
-            StaticUtil.log(ChatColor.RED, "Error when charging "+offlinePlayer.getName()+" to renew their stall #"+stall.getId());
-            return false;
+        if (!ecoHook.hasMoney(offlinePlayer, price) || !ecoHook.removeMoney(offlinePlayer, price)) {
+            double left_to_pay = price;
+
+            // search through shops and try to get payment
+            for (Shop shop : getShopMap(stall).values()) {
+                double initialBalance = shop.getStoredBalance();
+                if (initialBalance>0 & left_to_pay>0) {
+                    if (initialBalance >= left_to_pay) {
+                        shop.setStoredBalance(initialBalance-left_to_pay);
+                        left_to_pay = 0;
+                        break;
+                    } else {
+                        shop.setStoredBalance(0);
+                        left_to_pay=left_to_pay-initialBalance;
+                        continue;
+                    }
+                }
+            } if (left_to_pay>0) {
+                // refund player taken money if shops didnt contain enough
+                double paid = price - left_to_pay;
+                ecoHook.giveMoney(offlinePlayer, paid);
+
+                if (!auto) StaticUtil.sendMessage(player, "&cYou didn't have enough money in your pocket or your stall's shops to renew your stall! ($"+StaticUtil.formatInt(price)+")");
+                else StaticUtil.sendMail(offlinePlayer, "&cYou didn't have enough money in your pocket or your stall's shops to renew your stall! ($"+StaticUtil.formatInt(price)+")");
+                return false;
+            } else { 
+                // fully paid
+            }
         }
 
         stall.setEvictionDate(Date.from(newExpiry));
@@ -767,7 +788,7 @@ public class StallHandler {
                     continue;
                 } else {
                     if (clearStall(id, "missed payment", true)) {
-                        StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment! (funds were not in your pocket)");
+                        StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment!");
                         ++count;
                         continue;
                     }

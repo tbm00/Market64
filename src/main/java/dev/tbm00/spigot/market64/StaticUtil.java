@@ -420,35 +420,9 @@ public class StaticUtil {
         lore.add("&fYou can rent shop stalls in our market!");
         lore.add(" ");
         lore.add("&7Your stall will automatically renew when");
-        lore.add("&7the time runs out, unless");
-        lore.add("&7- you don't keep enough money stored in your pocket,");
-        lore.add("&7- your stall's shops haven't had any recent transactions, or");
-        lore.add("&7- more than half of your stall's shops are empty (no-item).");
-        // lore.add("&7- your playtime exceeds the max playtime for that stall.");
-        lore.add(" ");
-        meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&dAbout Stalls"));
-        item.setItemMeta(meta);
-        item.setType(Material.DARK_OAK_SIGN);
-        gui.setItem(6, 5, ItemBuilder.from(item).asGuiItem(event -> {event.setCancelled(true);}));
-        lore.clear();
-    }
-
-    /**
-     * Formats and sets the main GUI's info item.
-     *
-     * @param gui the gui that will be sent to the player
-     * @param item holder for current item
-     * @param meta holder for current item's meta
-     * @param lore holder for current item's lore
-     */
-    public static void setAboutStallItemInGui(BaseGui gui, ItemStack item, ItemMeta meta, List<String> lore, Stall stall) {
-        lore.add("&8-----------------------");
-        lore.add("&fYou can rent shop stalls in our market!");
-        lore.add(" ");
-        lore.add("&7Your stall will automatically renew when");
-        lore.add("&7the time runs out, unless");
-        lore.add("&7- you don't keep enough money stored in your pocket,");
+        lore.add("&7the stall's time runs out, unless");
+        lore.add("&7- you don't have enough money stored in your pocket");
+        lore.add("&7   (or your stall's shops) for renewal,");
         lore.add("&7- your stall's shops haven't had any recent transactions, or");
         lore.add("&7- more than half of your stall's shops are empty (no-item).");
         // lore.add("&7- your playtime exceeds the max playtime for that stall.");
