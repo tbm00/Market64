@@ -221,9 +221,7 @@ public class StallHandler {
      *  - Updates Stall entry in SQL database
      * @returns true on success, false if error
      */
-    public boolean fillStall(int stallId, Player player) {
-        Stall stall = getStall(stallId);
-
+    public boolean fillStall(Stall stall, Player player) {
         if (stall == null) {
             StaticUtil.sendMessage(player, "&cCould not find stall!");
             return false;
@@ -307,8 +305,7 @@ public class StallHandler {
      *  - Updates Stall entry in SQL database
      *  - Returns true on success, false when there was an error
      */
-    public boolean renewStall(int stallId, boolean auto) {
-        Stall stall = getStall(stallId);
+    public boolean renewStall(Stall stall, boolean auto) {
         if (stall == null) {
             StaticUtil.log(ChatColor.RED, "Could not find stall!");
             return false;
@@ -381,20 +378,24 @@ public class StallHandler {
 
                 if (!auto) StaticUtil.sendMessage(player, "&cYou didn't have enough money in your pocket or your stall's shops to renew your stall! ($"+StaticUtil.formatInt(price)+")");
                 else StaticUtil.sendMail(offlinePlayer, "&cYou didn't have enough money in your pocket or your stall's shops to renew your stall! ($"+StaticUtil.formatInt(price)+")");
+                
                 return false;
             } else { 
-                // fully paid
+                if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price)+"&f! &7(money taken from your stall's shops)");
+                else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price)+"&f! &7(money taken from your stall's shops)");
             }
+        } else {
+            if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price)+"&f! &7(money taken from your pocket)");
+            else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price)+"&f! &7(money taken from your pocket)");
         }
 
         stall.setEvictionDate(Date.from(newExpiry));
 
         if (!dao.update(stall)) {
             StaticUtil.log(ChatColor.RED, "dao.update(stall) failed after renewing stall " + stall.getId() +"!");
+        } else {
+            StaticUtil.log(ChatColor.GREEN, "Renewed " + offlinePlayer.getName() + "'s stall, next date: " + stall.getEvictionDate());
         }
-
-        if (!auto) StaticUtil.sendMessage(player, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
-        else StaticUtil.sendMail(offlinePlayer, "&fRenewed your stall for &a$"+StaticUtil.formatInt(price));
 
         return true;
     }
@@ -438,8 +439,7 @@ public class StallHandler {
      *  
      *  - Returns true on success, false when there was an error
      */
-    public boolean clearStall(int stallId, String reason, boolean auto) {
-        Stall stall = getStall(stallId);
+    public boolean clearStall(Stall stall, String reason, boolean auto) {
         if (stall == null) {
             StaticUtil.log(ChatColor.RED, "Could not find stall!");
             return false;
@@ -531,7 +531,7 @@ public class StallHandler {
         List<ItemStack> shulkerBoxes = new ArrayList<>();
         String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         while (!itemsFromShops.isEmpty()) {
-            String name = String.format("Stall #%d - %s - %s - #%d", stallId, stall.getRenterName(), dateStr, boxIndex++);
+            String name = String.format("Stall #%d - %s - %s - #%d", stall.getId(), stall.getRenterName(), dateStr, boxIndex++);
             ItemStack shulker = StaticUtil.createShulkerBox(name, itemsFromShops);
             shulkerBoxes.add(shulker);
         }
@@ -548,10 +548,10 @@ public class StallHandler {
 
         ItemStack paper = new ItemStack(Material.PAPER);
         ItemMeta pm = paper.getItemMeta();
-        String name = String.format("Stall #%d - %s - %s", stallId, stall.getRenterName(), dateStr);
+        String name = String.format("Stall #%d - %s - %s", stall.getId(), stall.getRenterName(), dateStr);
         pm.setDisplayName(name);
         List<String> lore = new ArrayList<>();
-        lore.add("Stall: " + stallId);
+        lore.add("Stall: " + stall.getId());
         lore.add("Renter: " + stall.getRenterName());
         lore.add("Date: " + dateStr);
         lore.add("Reason: " + reason);
@@ -729,19 +729,29 @@ public class StallHandler {
      *                 - else, continue
      */
     public int dailyTask() {
+        StaticUtil.log(ChatColor.GOLD, "---[ Before Daily Task ]---");
+        StaticUtil.log(ChatColor.GOLD, "-- Stall Count: "+ stalls.size());
+        int i = 0;
+        for (Stall stall : stalls) {
+            if (stall.isRented()) {
+                i++;
+                StaticUtil.log(ChatColor.YELLOW, i+"- Stall #"+ stall.getId() + ": "+Bukkit.getOfflinePlayer(stall.getRenterUuid()).getName());
+                StaticUtil.log(ChatColor.YELLOW, i+"-   LastTranscaction: "+ stall.getLastTransaction() + ", EvictionDate: "+stall.getEvictionDate());
+            }
+        }
+        
         int count = 0;
         for (Stall stall : stalls) {
             if (stall==null) continue;
             if (!stall.isRented()) continue;
 
-            int id = stall.getId();
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(stall.getRenterUuid());
 
             Date lastTransaction = stall.getLastTransaction();
             Date dateBase = new Date();
             Instant sinceDate = dateBase.toInstant().minus(3*stall.getRentalTimeDays(), ChronoUnit.DAYS);
             if (lastTransaction!=null && lastTransaction.before(Date.from(sinceDate))) {
-                if (clearStall(id, "no sales", true)) {
+                if (clearStall(stall, "no sales", true)) {
                     StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since it had no transactions for at least "+3*stall.getRentalTimeDays()+" days!");
                     ++count;
                     continue;
@@ -749,7 +759,7 @@ public class StallHandler {
             }
 
             if (stall.getPlayTimeDays()!=-1 && StaticUtil.getPlaytimeSeconds(offlinePlayer)>(stall.getPlayTimeDays()*86400)) {
-                if (clearStall(id, "max playtime", true)) {
+                if (clearStall(stall, "max playtime", true)) {
                     StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since you exceed the max playtime for that stall! ("+stall.getPlayTimeDays()+" days)");
                     ++count;
                     continue;
@@ -776,7 +786,7 @@ public class StallHandler {
                         }
                     }
                     if ((empty_count / shop_count) > .5) {
-                        if (clearStall(id, "majority empty", true)) {
+                        if (clearStall(stall, "majority empty", true)) {
                             StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since the majority of its shops were empty! ("+empty_count+"/"+shop_count+")");
                             ++count;
                             continue;
@@ -784,10 +794,10 @@ public class StallHandler {
                     }
                 }
 
-                if (renewStall(stall.getId(), true)) {
+                if (renewStall(stall, true)) {
                     continue;
                 } else {
-                    if (clearStall(id, "missed payment", true)) {
+                    if (clearStall(stall, "missed payment", true)) {
                         StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" for a missing an automatic payment!");
                         ++count;
                         continue;
@@ -795,6 +805,18 @@ public class StallHandler {
                 }
             }
         }
+
+        StaticUtil.log(ChatColor.GOLD, "---[ After Daily Task ]---");
+        StaticUtil.log(ChatColor.GOLD, "-- Stall Count: "+ stalls.size());
+        int j = 0;
+        for (Stall stall : stalls) {
+            if (stall.isRented()) {
+                j++;
+                StaticUtil.log(ChatColor.YELLOW, j+"- Stall #"+ stall.getId() + ": "+Bukkit.getOfflinePlayer(stall.getRenterUuid()).getName());
+                StaticUtil.log(ChatColor.YELLOW, j+"-   LastTranscaction: "+ stall.getLastTransaction() + ", EvictionDate: "+stall.getEvictionDate());
+            }
+        }
+
         return count;
     }
 

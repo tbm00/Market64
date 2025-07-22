@@ -417,14 +417,17 @@ public class StaticUtil {
      */
     public static void setAboutItemInGui(BaseGui gui, ItemStack item, ItemMeta meta, List<String> lore) {
         lore.add("&8-----------------------");
-        lore.add("&fYou can rent shop stalls in our market!");
+        lore.add("&aRent a stall and buy/sell items in our market!");
         lore.add(" ");
-        lore.add("&7Your stall will automatically renew when");
-        lore.add("&7the stall's time runs out, unless");
-        lore.add("&7- you don't have enough money stored in your pocket");
-        lore.add("&7   (or your stall's shops) for renewal,");
-        lore.add("&7- your stall's shops haven't had any recent transactions, or");
-        lore.add("&7- more than half of your stall's shops are empty (no-item).");
+        lore.add("&fYour stall will automatically renew when");
+        lore.add("&fthe stall's time runs out, unless");
+        lore.add("&7- you don't have enough money stored");
+        lore.add("&7   in your pocket (or your stall's shops)");
+        lore.add("&7   for renewal,");
+        lore.add("&7- your stall's shops haven't had any");
+        lore.add("&7   recent transactions, or");
+        lore.add("&7- more than half of your stall's shops");
+        lore.add("&7   are empty (no-item).");
         // lore.add("&7- your playtime exceeds the max playtime for that stall.");
         lore.add(" ");
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());

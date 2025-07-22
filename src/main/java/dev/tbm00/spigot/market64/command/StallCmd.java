@@ -103,8 +103,8 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        if (stallHandler.fillStall(id, player)) {
-            Stall stall = stallHandler.getStall(id);
+        Stall stall = stallHandler.getStall(id);
+        if (stallHandler.fillStall(stall, player)) {
             StaticUtil.sendMessage(sender, "&aRented stall "+id+"! &eYour stall will automatically renew after "+stall.getRentalTimeDays()+" days ("+stall.getEvictionDate()+"), as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
         } else {
             StaticUtil.sendMessage(sender, "&aFailed to rent stall "+id+"!");
@@ -156,7 +156,7 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        if (stallHandler.renewStall(stall.getId(), false)) {
+        if (stallHandler.renewStall(stall, false)) {
             StaticUtil.sendMessage(player, "&aRenewed stall "+stall.getId()+"! &eYour stall will automatically renew on "+stall.getEvictionDate()+", as long as you have $" + StaticUtil.formatInt(stall.getRenewalPrice()) +" in your pocket.");
         } else {
             StaticUtil.sendMessage(player, "&aFailed to renew stall!");
@@ -208,7 +208,7 @@ public class StallCmd implements TabExecutor {
             return true;
         }
 
-        if (stallHandler.clearStall(id, "player abandoned", false)) {
+        if (stallHandler.clearStall(stall, "player abandoned", false)) {
             StaticUtil.sendMessage(sender, "&aAbandoned stall "+id+"!");
         } else {
             StaticUtil.sendMessage(sender, "&aFailed to abandon stall "+id+"!");

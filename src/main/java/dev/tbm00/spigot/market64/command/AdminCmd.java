@@ -96,7 +96,7 @@ public class AdminCmd implements TabExecutor {
             return true;
         }
 
-        if (stallHandler.clearStall(id, "staff eviction", true)) {
+        if (stallHandler.clearStall(stallHandler.getStall(id), "staff eviction", true)) {
             StaticUtil.sendMessage(sender, "&aEvicted stall "+id+"!");
             return true;
         } else {
