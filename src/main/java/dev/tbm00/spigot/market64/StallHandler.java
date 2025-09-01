@@ -45,25 +45,22 @@ import dev.tbm00.spigot.market64.data.StallDAO;
 import dev.tbm00.spigot.market64.hook.DSHook;
 import dev.tbm00.spigot.market64.hook.EcoHook;
 import dev.tbm00.spigot.market64.hook.GDHook;
-import dev.tbm00.spigot.market64.hook.WGHook;
 
 public class StallHandler {
     private final Market64 javaPlugin;
     private final StallDAO dao;
     public final DSHook dsHook;
     public final GDHook gdHook;
-    public final WGHook wgHook;
-    public final EcoHook ecoHook;
+    private final EcoHook ecoHook;
 
     // stored sorted in order of stalls' ids
     private final List<Stall> stalls = new ArrayList<>();
 
-    public StallHandler(Market64 javaPlugin, MySQLConnection db, DSHook dsHook, GDHook gdHook, WGHook wgHook, EcoHook ecoHook) {
+    public StallHandler(Market64 javaPlugin, MySQLConnection db, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
         this.javaPlugin = javaPlugin;
         this.dao = new StallDAO(db);
         this.dsHook = dsHook;
         this.gdHook = gdHook;
-        this.wgHook = wgHook;
         this.ecoHook = ecoHook;
         
         reloadAll();
@@ -254,14 +251,16 @@ public class StallHandler {
 
         for (Shop shop : getShopMap(stall).values()) {
             // Pre-log
-            logShop(shop, ChatColor.YELLOW, shop.getStock(), -1, -1);
+            if (shop.getShopItem()==null) logShop(shop, ChatColor.YELLOW, null, shop.getStock(), -1, -1);
+            else logShop(shop, ChatColor.YELLOW, shop.getShopItem().getType(), shop.getStock(), -1, -1);
 
             shop.setOwnerUniqueId(player.getUniqueId());
             shop.setBuyPrice(100);
             shop.setSellPrice(50);
 
             // Post-log
-            logShop(shop, ChatColor.GREEN, shop.getStock(), -1, -1);
+            if (shop.getShopItem()==null) logShop(shop, ChatColor.YELLOW, null, shop.getStock(), -1, -1);
+            else logShop(shop, ChatColor.YELLOW, shop.getShopItem().getType(), shop.getStock(), -1, -1);
         }
 
         stall.setRented(true);
@@ -474,18 +473,21 @@ public class StallHandler {
             BlockState blockStateHolder = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
             String apperanceIdHolder = shop.getAppearanceId();
 
-            int stock = shop.getStock();
-            int stacks = stock/64, leftovers = stock%64;
-
-            // Pre-log
-            logShop(shop, ChatColor.YELLOW, stock, stacks, leftovers);
 
             // Capture & reset stored stock
             ItemStack prototype = shop.getShopItem();
             if (prototype!=null) {
+
+                int stock = shop.getStock();
+                int maxStacksize = prototype.getMaxStackSize();
+                int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
+
+                // Prelog
+                logShop(shop, ChatColor.YELLOW, prototype.getType(), stock, stacks, leftovers);
+
                 for (int i = 0; i<stacks; i++) {
                     ItemStack batch = prototype.clone();
-                    batch.setAmount(64);
+                    batch.setAmount(maxStacksize);
                     itemsFromShops.add(batch);
                 }
                 if (leftovers>0) {
@@ -523,7 +525,10 @@ public class StallHandler {
             block.setBlockData(blockStateHolder.getBlockData());
 
             // Post-log
-            logShop(shop, ChatColor.GREEN, stock, stacks, leftovers);
+            int stock = shop.getStock();
+            int maxStacksize = 64;
+            int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
+            logShop(shop, ChatColor.GREEN, null, stock, stacks, leftovers);
         }
 
         // Create shulker and deliever them
@@ -824,14 +829,23 @@ public class StallHandler {
         List<Shop> shops = dsHook.pl.getManager().getPlayerShops(player);
         for (Shop shop : shops) {
             int stock = shop.getStock();
-            int stacks = stock/64, leftovers = stock%64;
 
-            logShop(shop, ChatColor.WHITE, stock, stacks, leftovers);
+            if (shop.getShopItem()!=null) {
+                int maxStacksize = shop.getShopItem().getMaxStackSize();
+                int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
+                logShop(shop, ChatColor.WHITE, shop.getShopItem().getType(), stock, stacks, leftovers);
+            } else {
+                int maxStacksize = 64;
+                int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
+                logShop(shop, ChatColor.WHITE, null, stock, stacks, leftovers);
+            }
         } 
         return true;
     }
 
-    private void logShop(Shop shop, ChatColor color, int stock, int stacks, int leftovers) {
+    private void logShop(Shop shop, ChatColor color, Material material, int stock, int stacks, int leftovers) {
+        String mat = (material==null) ? "null item" : material.toString();
+        StaticUtil.log(color, shop.getShopId().toString() +": "+ mat);
         StaticUtil.log(color, "Stored Stock: "+stock+", "+stacks+" stacks "+leftovers+" leftover, Stack Size: "+shop.getShopItemAmount());
         StaticUtil.log(color, "Stored Money: "+shop.getStoredBalance()+", B:"+shop.getBuyPrice(false)+" S:"+shop.getSellPrice(false));
         StaticUtil.log(color, "Limits: GB:"+shop.getGlobalBuyLimit()+" GS:"+shop.getGlobalSellLimit()+" PB:"+shop.getPlayerBuyLimit()+" PS:"+shop.getPlayerSellLimit());

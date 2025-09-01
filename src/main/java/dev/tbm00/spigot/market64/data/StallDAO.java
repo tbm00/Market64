@@ -82,7 +82,7 @@ public class StallDAO {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(SELECT_ALL_SQL)) {
             while (rs.next()) {
-                out.add(newStallFromResultSet(rs));
+                out.add(loadStallFromResultSet(rs));
             }
         } catch (SQLException e) {
             StaticUtil.log(ChatColor.RED, "Error loading stalls: " + e.getMessage());
@@ -96,7 +96,7 @@ public class StallDAO {
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return newStallFromResultSet(rs);
+                    return loadStallFromResultSet(rs);
                 }
             }
         } catch (SQLException e) {
@@ -139,7 +139,7 @@ public class StallDAO {
         }
     }
 
-    private Stall newStallFromResultSet(ResultSet rs) throws SQLException {
+    private Stall loadStallFromResultSet(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         UUID claimUuid = UUID.fromString(rs.getString("claim_uuid"));
         World world = Bukkit.getWorld(rs.getString("world"));

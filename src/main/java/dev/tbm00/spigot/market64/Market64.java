@@ -51,7 +51,7 @@ public class Market64 extends JavaPlugin {
             setupHooks();
             
             if (configHandler.isFeatureEnabled()) {
-                stallHandler = new StallHandler(this, mysqlConnection, dsHook, gdHook, wgHook, ecoHook);
+                stallHandler = new StallHandler(this, mysqlConnection, dsHook, gdHook, ecoHook);
                 
                 // Register Listeners
                 getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler), this);
