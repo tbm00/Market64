@@ -275,7 +275,7 @@ public class AdminCmd implements TabExecutor {
             return true;
         }
 
-        stallHandler.rescanDisplayShops();
+        stallHandler.rescanPlayerShops();
         return true;
     }
 

@@ -128,20 +128,6 @@ public class Stall {
         shopUuids.add(uuid);
     }
 
-    /** @return the shop map */
-    /*public ConcurrentHashMap<String, Shop> getShopMap() {
-        return shops;
-    }*/
-    /** @param shops the shop map to set */
-    /*public void setShopMap(ConcurrentHashMap<String, Shop> shops) {
-        this.shops = shops;
-    }*/
-    /** @return the shop map */
-    /*public void addShopToMap(Shop shop, String locationStr) {
-        shops.put(locationStr, shop);
-    }*/
-    
-
     /** @return the world */
     public World getWorld() {
         return world;

@@ -1,5 +1,6 @@
 package dev.tbm00.spigot.market64;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,7 +26,6 @@ import org.bukkit.World;
 import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Villager;
@@ -36,30 +36,29 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.griefdefender.api.claim.Claim;
 
-import xzot1k.plugins.ds.api.objects.LocationClone;
-import xzot1k.plugins.ds.api.objects.Shop;
+import dev.tbm00.papermc.playershops64.data.structure.Shop;
 
 import dev.tbm00.spigot.market64.data.MySQLConnection;
 import dev.tbm00.spigot.market64.data.Stall;
 import dev.tbm00.spigot.market64.data.StallDAO;
-import dev.tbm00.spigot.market64.hook.DSHook;
+import dev.tbm00.spigot.market64.hook.PSHook;
 import dev.tbm00.spigot.market64.hook.EcoHook;
 import dev.tbm00.spigot.market64.hook.GDHook;
 
 public class StallHandler {
     private final Market64 javaPlugin;
     private final StallDAO dao;
-    public final DSHook dsHook;
+    public final PSHook psHook;
     public final GDHook gdHook;
     private final EcoHook ecoHook;
 
     // stored sorted in order of stalls' ids
     private final List<Stall> stalls = new ArrayList<>();
 
-    public StallHandler(Market64 javaPlugin, MySQLConnection db, DSHook dsHook, GDHook gdHook, EcoHook ecoHook) {
+    public StallHandler(Market64 javaPlugin, MySQLConnection db, PSHook psHook, GDHook gdHook, EcoHook ecoHook) {
         this.javaPlugin = javaPlugin;
         this.dao = new StallDAO(db);
-        this.dsHook = dsHook;
+        this.psHook = psHook;
         this.gdHook = gdHook;
         this.ecoHook = ecoHook;
         
@@ -85,19 +84,17 @@ public class StallHandler {
         }
 
         // Load stalls' shops
-        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+        Map<UUID, Shop> psMap = psHook.pl.getShopHandler().getShopView();
         shopLoop:
-        for (Shop shop : dsMap.values()) {
-            LocationClone shopLoc = shop.getBaseLocation();
+        for (Shop shop : psMap.values()) {
+            Location shopLoc = shop.getLocation();
 
             for (Stall stall : stallsToLoad) {
                 if (stall==null) continue;
                 Claim claim = stall.getClaim();
 
-                if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
-                    //String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
-                    //stall.addShopToMap(shop, locationStr);
-                    stall.addShopUuidToSet(shop.getShopId());
+                if (psHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                    stall.addShopUuidToSet(shop.getUuid());
                     continue shopLoop;
                 }
             }
@@ -141,39 +138,25 @@ public class StallHandler {
                              .mapToInt(Integer::parseInt)
                              .toArray();
 
-        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
-        ConcurrentHashMap<String, Shop> stallShops = new ConcurrentHashMap<>();
+        Map<UUID, Shop> psMap = psHook.pl.getShopHandler().getShopView();
         Set<UUID> shopUuids = new HashSet<>();
         shopLoop:
-        for (Shop shop : dsMap.values()) {
-            LocationClone shopLoc = shop.getBaseLocation();
+        for (Shop shop : psMap.values()) {
+            Location shopLoc = shop.getLocation();
 
-            if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
-                String apperanceIdHolder = shop.getAppearanceId();
-                BlockState blockStateHolder = world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
-                String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
-                stallShops.put(locationStr, shop);
-                shop.setStoredBalance(0);
-                shop.setStock(0);
-                shop.setShopItemAmount(1);
-                shop.setShopItem(null);
-                shop.setGlobalBuyLimit(-1);
-                shop.setGlobalSellLimit(-1);
-                shop.setGlobalBuyCounter(-1);
-                shop.setGlobalSellCounter(-1);
-                shop.setPlayerBuyLimit(-1);
-                shop.setPlayerSellLimit(-1);
-                shop.setBuyPrice(-1);
-                shop.setSellPrice(-1);
-                shop.setOwnerUniqueId(null);
-                shop.reset(); // catch-all
+            if (psHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                shop.setMoneyStock(BigDecimal.ZERO);
+                shop.setItemStock(0);
+                shop.setStackSize(1);
+                shop.setItemStack(null);
+                shop.setBuyPrice(null);
+                shop.setSellPrice(null);
+                shop.setOwnerName(null);
+                shop.setOwnerUuid(null);
+                shop.setAssistants(new HashSet<>());
 
-                shop.setAppearanceId(apperanceIdHolder);
-                Block block = world.getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ());
-                block.setType(blockStateHolder.getType());
-                block.setBlockData(blockStateHolder.getBlockData());
-
-                shopUuids.add(shop.getShopId());
+                psHook.upsertShop(shop);
+                shopUuids.add(shop.getUuid());
                 continue shopLoop;
             }
         }
@@ -249,18 +232,21 @@ public class StallHandler {
             return false;
         }
 
-        for (Shop shop : getShopMap(stall).values()) {
+        for (Shop shop : getStallsShops(stall).values()) {
             // Pre-log
-            if (shop.getShopItem()==null) logShop(shop, ChatColor.YELLOW, null, shop.getStock(), -1, -1);
-            else logShop(shop, ChatColor.YELLOW, shop.getShopItem().getType(), shop.getStock(), -1, -1);
+            if (shop.getItemStack()==null) logShop(shop, ChatColor.YELLOW, null, shop.getItemStock(), -1, -1);
+            else logShop(shop, ChatColor.YELLOW, shop.getItemStack().getType(), shop.getItemStock(), -1, -1);
 
-            shop.setOwnerUniqueId(player.getUniqueId());
-            shop.setBuyPrice(100);
-            shop.setSellPrice(50);
+            shop.setOwnerUuid(player.getUniqueId());
+            shop.setOwnerName(player.getName());
+            shop.setBuyPrice(BigDecimal.valueOf(100));
+            shop.setSellPrice(BigDecimal.valueOf(50));
+
+            psHook.upsertShop(shop);
 
             // Post-log
-            if (shop.getShopItem()==null) logShop(shop, ChatColor.YELLOW, null, shop.getStock(), -1, -1);
-            else logShop(shop, ChatColor.YELLOW, shop.getShopItem().getType(), shop.getStock(), -1, -1);
+            if (shop.getItemStack()==null) logShop(shop, ChatColor.YELLOW, null, shop.getItemStock(), -1, -1);
+            else logShop(shop, ChatColor.YELLOW, shop.getItemStack().getType(), shop.getItemStock(), -1, -1);
         }
 
         stall.setRented(true);
@@ -357,15 +343,17 @@ public class StallHandler {
             double left_to_pay = price;
 
             // search through shops and try to get payment
-            for (Shop shop : getShopMap(stall).values()) {
-                double initialBalance = shop.getStoredBalance();
+            for (Shop shop : getStallsShops(stall).values()) {
+                double initialBalance = shop.getMoneyStock().doubleValue();
                 if (initialBalance>0 & left_to_pay>0) {
                     if (initialBalance >= left_to_pay) {
-                        shop.setStoredBalance(initialBalance-left_to_pay);
+                        shop.setMoneyStock(BigDecimal.valueOf(initialBalance-left_to_pay));
+                        psHook.upsertShop(shop);
                         left_to_pay = 0;
                         break;
                     } else {
-                        shop.setStoredBalance(0);
+                        shop.setMoneyStock(BigDecimal.ZERO);
+                        psHook.upsertShop(shop);
                         left_to_pay=left_to_pay-initialBalance;
                         continue;
                     }
@@ -468,17 +456,13 @@ public class StallHandler {
         // Capture shops' stored contents and reset data
         double totalRefund = 0;
         List<ItemStack> itemsFromShops = new ArrayList<>();
-        for (Shop shop : getShopMap(stall).values()) {
-            LocationClone shopLoc = shop.getBaseLocation();
-            BlockState blockStateHolder = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ()).getState();
-            String apperanceIdHolder = shop.getAppearanceId();
-
-
+        for (Shop shop : getStallsShops(stall).values()) {
+                        
             // Capture & reset stored stock
-            ItemStack prototype = shop.getShopItem();
+            ItemStack prototype = shop.getItemStack();
             if (prototype!=null) {
 
-                int stock = shop.getStock();
+                int stock = shop.getItemStock();
                 int maxStacksize = prototype.getMaxStackSize();
                 int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
 
@@ -498,34 +482,28 @@ public class StallHandler {
             }
 
             // Refund & reset stored balance
-            double storedBal = shop.getStoredBalance();
+            double storedBal = shop.getMoneyStock().doubleValue();
             totalRefund += storedBal;
             if (ecoHook.giveMoney(offlinePlayer, storedBal)) {
-                shop.setStoredBalance(0);
-            } else shop.returnBalance();
+                shop.setMoneyStock(BigDecimal.ZERO);
+            } else {
+                StaticUtil.log(ChatColor.RED, "Failed to remove " + storedBal + " from shop " + shop.getUuid() + " during stall clear!");
+            }
 
             // Reset other shop data
-            shop.setStock(0);
-            shop.setShopItemAmount(1);
-            shop.setShopItem(null);
-            shop.setGlobalBuyLimit(-1);
-            shop.setGlobalSellLimit(-1);
-            shop.setGlobalBuyCounter(-1);
-            shop.setGlobalSellCounter(-1);
-            shop.setPlayerBuyLimit(-1);
-            shop.setPlayerSellLimit(-1);
-            shop.setBuyPrice(-1);
-            shop.setSellPrice(-1);
-            shop.setOwnerUniqueId(null);
-            shop.reset(); // catch-all
-            
-            shop.setAppearanceId(apperanceIdHolder);
-            Block block = stall.getWorld().getBlockAt((int)shopLoc.getX(), (int)shopLoc.getY(), (int)shopLoc.getZ());
-            block.setType(blockStateHolder.getType());
-            block.setBlockData(blockStateHolder.getBlockData());
+            shop.setItemStock(0);
+            shop.setStackSize(1);
+            shop.setItemStack(null);
+            shop.setBuyPrice(null);
+            shop.setSellPrice(null);
+            shop.setOwnerName(null);
+            shop.setOwnerUuid(null);
+            shop.setAssistants(new HashSet<>());
+
+            psHook.upsertShop(shop);
 
             // Post-log
-            int stock = shop.getStock();
+            int stock = shop.getItemStock();
             int maxStacksize = 64;
             int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
             logShop(shop, ChatColor.GREEN, null, stock, stacks, leftovers);
@@ -740,6 +718,9 @@ public class StallHandler {
         for (Stall stall : stalls) {
             if (stall.isRented()) {
                 i++;
+                stall.setLastTransaction(getLastTranscation(stall));
+                dao.update(stall);
+
                 StaticUtil.log(ChatColor.YELLOW, i+"- Stall #"+ stall.getId() + ": "+Bukkit.getOfflinePlayer(stall.getRenterUuid()).getName());
                 StaticUtil.log(ChatColor.YELLOW, i+"-   LastTranscaction: "+ stall.getLastTransaction() + ", EvictionDate: "+stall.getEvictionDate());
             }
@@ -780,17 +761,17 @@ public class StallHandler {
                 }
                 continue;
             } else if ((new Date()).after(evictionDate)) {
-                ConcurrentHashMap<String,Shop> shopMap = getShopMap(stall);
+                ConcurrentHashMap<UUID,Shop> shopMap = getStallsShops(stall);
                 int shop_count = shopMap.size();
                 if (shop_count != 0) {
                     int empty_count = 0;
-                    for (Shop shop : getShopMap(stall).values()) {
-                        ItemStack prototype = shop.getShopItem();
+                    for (Shop shop : shopMap.values()) {
+                        ItemStack prototype = shop.getItemStack();
                         if (prototype==null || prototype.getType()==Material.AIR) {
                             empty_count++;
                         }
                     }
-                    if ((empty_count / shop_count) > .5) {
+                    if ((empty_count / shop_count) > .65) {
                         if (clearStall(stall, "majority empty", true)) {
                             StaticUtil.sendMail(offlinePlayer, "&cYou were evicted from stall #"+stall.getId()+" since the majority of its shops were empty! ("+empty_count+"/"+shop_count+")");
                             ++count;
@@ -826,14 +807,15 @@ public class StallHandler {
     }
 
     public boolean getShopInfo(Player player) {
-        List<Shop> shops = dsHook.pl.getManager().getPlayerShops(player);
-        for (Shop shop : shops) {
-            int stock = shop.getStock();
+        Set<UUID> shopUuids = psHook.pl.getShopHandler().getPlayersShops(player.getUniqueId());
+        for (UUID shopUuid : shopUuids) {
+            Shop shop = psHook.pl.getShopHandler().getShop(shopUuid);
+            int stock = shop.getItemStock();
 
-            if (shop.getShopItem()!=null) {
-                int maxStacksize = shop.getShopItem().getMaxStackSize();
+            if (shop.getItemStack()!=null) {
+                int maxStacksize = shop.getItemStack().getMaxStackSize();
                 int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
-                logShop(shop, ChatColor.WHITE, shop.getShopItem().getType(), stock, stacks, leftovers);
+                logShop(shop, ChatColor.WHITE, shop.getItemStack().getType(), stock, stacks, leftovers);
             } else {
                 int maxStacksize = 64;
                 int stacks = stock/maxStacksize, leftovers = stock%maxStacksize;
@@ -845,12 +827,10 @@ public class StallHandler {
 
     private void logShop(Shop shop, ChatColor color, Material material, int stock, int stacks, int leftovers) {
         String mat = (material==null) ? "null item" : material.toString();
-        StaticUtil.log(color, shop.getShopId().toString() +": "+ mat);
-        StaticUtil.log(color, "Stored Stock: "+stock+", "+stacks+" stacks "+leftovers+" leftover, Stack Size: "+shop.getShopItemAmount());
-        StaticUtil.log(color, "Stored Money: "+shop.getStoredBalance()+", B:"+shop.getBuyPrice(false)+" S:"+shop.getSellPrice(false));
-        StaticUtil.log(color, "Limits: GB:"+shop.getGlobalBuyLimit()+" GS:"+shop.getGlobalSellLimit()+" PB:"+shop.getPlayerBuyLimit()+" PS:"+shop.getPlayerSellLimit());
-        StaticUtil.log(color, "Counts: GB:"+shop.getGlobalBuyCounter()+" GS:"+shop.getGlobalSellCounter());
-        if (shop.getOwnerUniqueId()!=null) StaticUtil.log(color, "Owner: "+Bukkit.getOfflinePlayer(shop.getOwnerUniqueId()).getName());
+        StaticUtil.log(color, shop.getUuid().toString() +": "+ mat);
+        StaticUtil.log(color, "Stored Stock: "+stock+", "+stacks+" stacks "+leftovers+" leftover, Stack Size: "+shop.getStackSize());
+        StaticUtil.log(color, "Stored Money: "+shop.getMoneyStock()+", B:"+shop.getBuyPrice()+" S:"+shop.getSellPrice());
+        if (shop.getOwnerName()!=null) StaticUtil.log(color, "Owner: "+shop.getOwnerName());
         StaticUtil.log(color, "Assistants: ");
         for (UUID uuid : shop.getAssistants()) {
             if (uuid==null) continue;
@@ -887,36 +867,48 @@ public class StallHandler {
         while (stalls.size() <= id) stalls.add(null);
     }
 
-    public ConcurrentHashMap<String, Shop> getShopMap(Stall stall) {
+    public ConcurrentHashMap<UUID, Shop> getStallsShops(Stall stall) {
         if (stall == null) return null;
 
         Claim claim = stall.getClaim();
         if (claim == null) return null;
 
-        ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
-        ConcurrentHashMap<String, Shop> stallShops = new ConcurrentHashMap<>();
+        Map<UUID, Shop> psMap = psHook.pl.getShopHandler().getShopView();
+        ConcurrentHashMap<UUID, Shop> stallShops = new ConcurrentHashMap<>();
 
-        for (Shop shop : dsMap.values()) {
-            LocationClone shopLoc = shop.getBaseLocation();
+        for (Shop shop : psMap.values()) {
+            Location shopLoc = shop.getLocation();
 
-            if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
-                String locationStr = shopLoc.getWorldName() + "," + shopLoc.getX() + "," + shopLoc.getY() + "," + shopLoc.getZ();
-                stallShops.put(locationStr, shop);
+            if (psHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                stallShops.put(shop.getUuid(), shop);
             }
         }
-
 
         return stallShops;
     }
 
-    public void rescanDisplayShops() {
+    public Date getLastTranscation(Stall stall) {
+        Date newestDate = null;
+        for (Shop shop : getStallsShops(stall).values()) {
+            if (shop.getLastTransactionDate()==null || shop.getLastTransactionDate().equals(null))
+                continue;
+            if (newestDate == null || newestDate.equals(null)) {
+                newestDate = shop.getLastTransactionDate();
+                continue;
+            } if (shop.getLastTransactionDate().after(newestDate)) 
+                newestDate = shop.getLastTransactionDate();
+        }
+        return newestDate;
+    }
+
+    public void rescanPlayerShops() {
         for (Stall stall : stalls) {
             if (stall == null) continue;
 
             Claim claim = stall.getClaim();
             if (claim == null) continue;
 
-            ConcurrentHashMap<String, Shop> dsMap = dsHook.pl.getManager().getShopMap();
+            Map<UUID, Shop> psMap = psHook.pl.getShopHandler().getShopView();
             Set<UUID> shopUuids = new HashSet<>();
 
             UUID renterUuid = null;
@@ -924,13 +916,15 @@ public class StallHandler {
                 renterUuid = stall.getRenterUuid();
             }
 
-            for (Shop shop : dsMap.values()) {
-                LocationClone shopLoc = shop.getBaseLocation();
+            for (Shop shop : psMap.values()) {
+                Location shopLoc = shop.getLocation();
 
-                if (dsHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
-                    shopUuids.add(shop.getShopId());
+                if (psHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
+                    shopUuids.add(shop.getUuid());
                     if (renterUuid!=null) {
-                        shop.setOwnerUniqueId(renterUuid);
+                        shop.setOwnerUuid(renterUuid);
+                        shop.setOwnerName(stall.getRenterName());
+                        psHook.upsertShop(shop);
                     }
                 }
             }

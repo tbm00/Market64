@@ -1,10 +1,7 @@
 package dev.tbm00.spigot.market64.listener;
 
-import java.util.Date;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.sign.Side;
@@ -23,15 +20,17 @@ import dev.tbm00.spigot.market64.StaticUtil;
 import dev.tbm00.spigot.market64.data.Stall;
 import dev.tbm00.spigot.market64.gui.StallGui;
 import dev.tbm00.spigot.market64.gui.VillagerGui;
-import xzot1k.plugins.ds.api.events.ShopTransactionEvent;
+import dev.tbm00.spigot.market64.hook.PSHook;
 
 public class StallObjects implements Listener {
     private final Market64 javaPlugin;
     private final StallHandler stallHandler;
+    private final PSHook psHook;
 
-    public StallObjects(Market64 javaPlugin, StallHandler stallHandler) {
+    public StallObjects(Market64 javaPlugin, StallHandler stallHandler, PSHook psHook) {
         this.javaPlugin = javaPlugin;
         this.stallHandler = stallHandler;
+        this.psHook = psHook;
     }
 
     /**
@@ -67,7 +66,7 @@ public class StallObjects implements Listener {
                     new StallGui(javaPlugin, stallHandler, stall, event.getPlayer());
                     return;
                 } else {
-                    new VillagerGui(javaPlugin, stallHandler, stall, event.getPlayer());
+                    new VillagerGui(javaPlugin, stallHandler, psHook, stall, event.getPlayer());
                     return;
                 }
             }
@@ -185,33 +184,6 @@ public class StallObjects implements Listener {
         } else {
             StaticUtil.sendMessage(event.getPlayer(), "&aCreated stall #" + id);
             return;
-        }
-    }
-
-    /**
-     * Updates the stall's last transaction date if its active.
-     *
-     * @param event the ShopTransactionEvent
-     */
-    @EventHandler
-    public void onShopTransaction(ShopTransactionEvent event) {
-        final UUID shopId = event.getShop().getShopId();
-        final int initialStock = event.getShop().getStock();
-        for (Stall stall : stallHandler.getStalls()) {
-            if ((stall != null && stall.isRented()) && stall.getShopUuids().contains(shopId)) {
-                final int stallId = stall.getId();
-
-                // Schedule the transaction check later
-                Bukkit.getScheduler().runTaskLater(javaPlugin, () -> {
-                    if (stallHandler.dsHook.pl.getManager().getShopById(shopId).getStock()!=initialStock) {
-                        stallHandler.getStall(stallId).setLastTransaction(new Date());
-
-                        if (!stallHandler.getStallDao().update(stallHandler.getStall(stallId))) {
-                            StaticUtil.log(ChatColor.RED, "stallHandler.getStallDao().update(stallHandler.getStall(stallId)) failed after updating shop transaction for stall " + stall.getId() +"!");
-                        }
-                    }
-                }, 1200L);
-            }
         }
     }
 }

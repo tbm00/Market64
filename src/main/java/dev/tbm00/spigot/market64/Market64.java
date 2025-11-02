@@ -18,7 +18,7 @@ public class Market64 extends JavaPlugin {
     private ConfigHandler configHandler;
     private MySQLConnection mysqlConnection;
     private StallHandler stallHandler;
-    public static DSHook dsHook;
+    public static PSHook psHook;
     public static GDHook gdHook;
     public static WGHook wgHook;
     public static EcoHook ecoHook;
@@ -51,10 +51,10 @@ public class Market64 extends JavaPlugin {
             setupHooks();
             
             if (configHandler.isFeatureEnabled()) {
-                stallHandler = new StallHandler(this, mysqlConnection, dsHook, gdHook, ecoHook);
+                stallHandler = new StallHandler(this, mysqlConnection, psHook, gdHook, ecoHook);
                 
                 // Register Listeners
-                getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler), this);
+                getServer().getPluginManager().registerEvents(new StallObjects(this, stallHandler, psHook), this);
                 getServer().getPluginManager().registerEvents(new PlayerMovement(), this);
                 getServer().getPluginManager().registerEvents(new MarketClaimListener(this, wgHook), this);
                 getServer().getPluginManager().registerEvents(new VoidCityClaimListener(this, wgHook), this);
@@ -71,8 +71,8 @@ public class Market64 extends JavaPlugin {
      * Disables the plugin if any required hook fails.
      */
     private void setupHooks() {
-        if (!setupDisplayShops()) {
-            getLogger().severe("DisplayShops hook failed -- disabling plugin!");
+        if (!setupPlayerShops64()) {
+            getLogger().severe("PlayerShops64 hook failed -- disabling plugin!");
             disablePlugin();
             return;
         }
@@ -97,20 +97,20 @@ public class Market64 extends JavaPlugin {
     }
 
     /**
-     * Attempts to hook into the DisplayShops plugin.
+     * Attempts to hook into the PlayerShops64 plugin.
      *
      * @return true if the hook was successful, false otherwise.
      */
-    private boolean setupDisplayShops() {
-        if (!isPluginAvailable("DisplayShops")) return false;
+    private boolean setupPlayerShops64() {
+        if (!isPluginAvailable("PlayerShops64")) return false;
 
-        dsHook = new DSHook(this);
+        psHook = new PSHook(this);
 
-        if (dsHook==null || dsHook.pl==null) {
+        if (psHook==null || psHook.pl==null) {
             return false;
         }
 
-        StaticUtil.log(ChatColor.GREEN, "DisplayShops hooked.");
+        StaticUtil.log(ChatColor.GREEN, "PlayerShops64 hooked.");
         return true;
     }
 

@@ -4,7 +4,7 @@ description: ${project.description}
 author: tbm00
 main: dev.tbm00.spigot.market64.Market64
 api-version: 1.17
-depend: [DisplayShops, WorldGuard, GriefDefender, Vault]
+depend: [PlayerShops64, WorldGuard, GriefDefender, Vault]
 commands:
   stall:
     description: Main command for Market64

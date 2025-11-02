@@ -33,11 +33,12 @@ import com.griefdefender.api.claim.Claim;
 import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
-import dev.tbm00.spigot.market64.data.ConfigHandler;
-import dev.tbm00.spigot.market64.data.Stall;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.PaginatedGui;
+
+import dev.tbm00.spigot.market64.data.ConfigHandler;
+import dev.tbm00.spigot.market64.data.Stall;
 
 public class StaticUtil {
     private static Market64 javaPlugin;

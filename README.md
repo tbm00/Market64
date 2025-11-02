@@ -10,4 +10,4 @@ Created by tbm00 for play.mc64.wtf.
 - **Vault**: REQUIRED
 - **WorldGuard**: REQUIRED
 - **GriefDefender**: REQUIRED
-- **DisplayShops**: REQUIRED
+- **PlayerShops64**: REQUIRED

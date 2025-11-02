@@ -1,21 +1,23 @@
 package dev.tbm00.spigot.market64.hook;
 
-import xzot1k.plugins.ds.DisplayShops;
-import xzot1k.plugins.ds.api.objects.LocationClone;
+import org.bukkit.Location;
 
 import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 
+import dev.tbm00.papermc.playershops64.PlayerShops64;
+import dev.tbm00.papermc.playershops64.data.structure.Shop;
+
 import dev.tbm00.spigot.market64.Market64;
 
-public class DSHook {
+public class PSHook {
 
-    public DisplayShops pl;
+    public PlayerShops64 pl;
     
-    public DSHook(Market64 javaPlugin) {
-        pl = ((DisplayShops) javaPlugin.getServer().getPluginManager().getPlugin("DisplayShops"));
+    public PSHook(Market64 javaPlugin) {
+        pl = ((PlayerShops64) javaPlugin.getServer().getPluginManager().getPlugin("PlayerShops64"));
     }
 
-    public boolean isInRegion(LocationClone location, Vector3i lowerNorthWestCorner, Vector3i upperSouthEastCorner) {
+    public boolean isInRegion(Location location, Vector3i lowerNorthWestCorner, Vector3i upperSouthEastCorner) {
         double x = location.getX(), y = location.getY(), z = location.getZ();
 
         // Calculate the minimum and maximum boundaries on each axis
@@ -30,5 +32,9 @@ public class DSHook {
         return (x >= minX && x <= maxX) &&
                (y >= minY && y <= maxY) &&
                (z >= minZ && z <= maxZ);
+    }
+
+    public void upsertShop(Shop shop) {
+        pl.getShopHandler().upsertShopObject(null);
     }
 }

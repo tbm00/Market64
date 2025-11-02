@@ -18,6 +18,7 @@ import org.bukkit.ChatColor;
 import dev.triumphteam.gui.builder.item.ItemBuilder;
 import dev.triumphteam.gui.guis.BaseGui;
 import dev.triumphteam.gui.guis.Gui;
+
 import dev.tbm00.spigot.market64.Market64;
 import dev.tbm00.spigot.market64.StallHandler;
 import dev.tbm00.spigot.market64.StaticUtil;
@@ -120,7 +121,7 @@ public class StallGui {
         lore.add("&7Rental Length: &f"+stall.getRentalTimeDays()+" days");
         if (stall.getPlayTimeDays()==-1) lore.add("&7Max Playtime: &f∞");
         else lore.add("&7Max Playtime: &f"+stall.getPlayTimeDays()+" days");
-        lore.add("&7DisplayShops: &f"+stall.getShopUuids().size());
+        lore.add("&7S: &f"+stall.getShopUuids().size());
 
         lore.add(" ");
         if (stall.isRented()) {
