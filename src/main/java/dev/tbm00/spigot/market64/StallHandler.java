@@ -931,4 +931,19 @@ public class StallHandler {
             stall.setShopUuids(shopUuids);
         }
     }
+
+    public void divideStallPrices(Double factor) {
+        if (factor==null) return;
+        for (Stall stall : stalls) {
+            if (stall == null) continue;
+
+            Double initialRenew = stall.getRenewalPrice();
+            Double initialInitial = stall.getInitialPrice();
+
+            stall.setRenewalPrice(initialRenew/factor);
+            stall.setInitialPrice(initialInitial/factor);
+
+            dao.update(stall);
+        }
+    }
 }

@@ -62,6 +62,8 @@ public class AdminCmd implements TabExecutor {
                 return handleRescanShopsCmd(sender);
             case "lowerstoragelocations":
                 return handleStorageCmd(sender);
+            case "divide":
+                return handleDivideCmd(sender, args);
             default:
                 return false;
         }
@@ -276,6 +278,17 @@ public class AdminCmd implements TabExecutor {
         }
 
         stallHandler.rescanPlayerShops();
+        return true;
+    }
+
+    private boolean handleDivideCmd(CommandSender sender, String[] args) {
+        if (!StaticUtil.hasPermission(sender, StaticUtil.ADMIN_PERM)) {
+            StaticUtil.sendMessage(sender, "&cNo permission!");
+            return true;
+        }
+
+        Double val = Double.valueOf(args[1]);
+        stallHandler.divideStallPrices(val);
         return true;
     }
 
