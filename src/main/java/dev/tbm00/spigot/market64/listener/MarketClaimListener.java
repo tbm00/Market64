@@ -9,6 +9,7 @@ import com.griefdefender.api.GriefDefender;
 import com.griefdefender.api.claim.Claim;
 import com.griefdefender.api.event.ChangeClaimEvent;
 import com.griefdefender.api.event.CreateClaimEvent;
+import com.griefdefender.api.event.TransferClaimEvent;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
@@ -20,8 +21,10 @@ import dev.tbm00.spigot.market64.hook.WGHook;
 public class MarketClaimListener implements Listener {
     World world = null;
     ProtectedRegion wgRegion = null;
+    Market64 javaPlugin;
 
     public MarketClaimListener(Market64 javaPlugin, WGHook wgHook) {
+        this.javaPlugin = javaPlugin;
         world = javaPlugin.getServer().getWorld(StaticUtil.MARKET_WORLD);
         if (world == null) {
             StaticUtil.log(ChatColor.RED, "Required world " + StaticUtil.MARKET_WORLD + " is not loaded on the server!");
@@ -195,6 +198,45 @@ public class MarketClaimListener implements Listener {
             } else {
                 StaticUtil.log(ChatColor.RED, "Could not find player from event.getSourceUser().getOnlinePlayer() in ClaimExpansion listener!");
             }
+            return;
+        }
+    }
+
+    /**
+     * Cancels the change event if the claim is not completely inside the market
+     *
+     * @param event the ClaimExpansion
+     */
+    public void onClaimTransfer(TransferClaimEvent event) {
+
+        Player sender = (Player) event.getSourceUser().getOnlinePlayer();
+        if (sender != null && sender instanceof Player && (sender.hasPermission(StaticUtil.BYPASS_PERM))) { 
+            return;
+        }
+
+        event.getNewOwner();
+
+        Claim claim = event.getClaim();
+
+        if (!claim.getWorldName().equalsIgnoreCase(StaticUtil.MARKET_WORLD)) return;
+        if (!StaticUtil.isClaimContained(wgRegion, claim)) return;
+
+        Player player = javaPlugin.getServer().getPlayer(event.getNewOwner());
+        if (player == null || !(player instanceof Player)) { 
+            event.cancelled(true);
+            StaticUtil.sendMessage(sender, "&4Error: &cPlayer not online..!");
+            return;
+        }
+
+        if ((player.hasPermission(StaticUtil.MARKET_DENIED_PERM))) { 
+            event.cancelled(true);
+            StaticUtil.sendMessage(sender, "&4Error: &cPlayer is blacklisted from the market..!");
+            return;
+        }
+
+        if (StaticUtil.hasMaxContainedClaims(wgRegion, javaPlugin.gdHook.getClaims(player.getUniqueId()), StaticUtil.MARKET_MAX_CONTAINED_CLAIMS)) {
+            event.cancelled(true);
+            StaticUtil.sendMessage(sender, "&4Error: &cMax market plots per player is "+StaticUtil.MARKET_MAX_CONTAINED_CLAIMS+"... It will increase as the market grows -- please leave room for others!");
             return;
         }
     }

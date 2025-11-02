@@ -1,5 +1,7 @@
 package dev.tbm00.spigot.market64.hook;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -15,6 +17,10 @@ import com.griefdefender.lib.flowpowered.math.vector.Vector3i;
 public class GDHook {
 
 	public GDHook() {}
+
+	public Set<Claim> getClaims(UUID playerUuid) {
+		return new HashSet<>(GriefDefender.getCore().getAllPlayerClaims(playerUuid));
+	}
 	
 	public String getRegionID(Location location) {
 		final Vector3i vector = Vector3i.from(location.getBlockX(), location.getBlockY(), location.getBlockZ());

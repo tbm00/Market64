@@ -19,7 +19,7 @@ public class Market64 extends JavaPlugin {
     private MySQLConnection mysqlConnection;
     private StallHandler stallHandler;
     public static PSHook psHook;
-    public static GDHook gdHook;
+    public GDHook gdHook;
     public static WGHook wgHook;
     public static EcoHook ecoHook;
 
