@@ -121,7 +121,7 @@ public class StallGui {
         lore.add("&7Rental Length: &f"+stall.getRentalTimeDays()+" days");
         if (stall.getPlayTimeDays()==-1) lore.add("&7Max Playtime: &f∞");
         else lore.add("&7Max Playtime: &f"+stall.getPlayTimeDays()+" days");
-        lore.add("&7S: &f"+stall.getShopUuids().size());
+        lore.add("&7Shop Count: &f"+stall.getShopUuids().size());
 
         lore.add(" ");
         if (stall.isRented()) {

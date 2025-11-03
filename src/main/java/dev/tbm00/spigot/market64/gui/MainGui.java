@@ -120,7 +120,7 @@ public class MainGui {
                 lore.add("&7Rental Length: &f"+stall.getRentalTimeDays()+" days");
                 if (stall.getPlayTimeDays()==-1) lore.add("&7Max Playtime: &f∞");
                 else lore.add("&7Max Playtime: &f"+stall.getPlayTimeDays()+" days");
-                lore.add("&: &f"+stall.getShopUuids().size());
+                lore.add("&7Shop Count: &f"+stall.getShopUuids().size());
                 item.setType(Material.GLASS);
             }
             lore.add("&8-----------------------");

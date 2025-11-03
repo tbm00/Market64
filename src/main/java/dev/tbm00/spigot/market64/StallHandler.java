@@ -921,7 +921,13 @@ public class StallHandler {
 
                 if (psHook.isInRegion(shopLoc, gdHook.getLowerNorthWestCorner(claim), gdHook.getUpperSouthEastCorner(claim))) {
                     shopUuids.add(shop.getUuid());
-                    if (renterUuid!=null) {
+                    if (renterUuid==null && (shop.getOwnerUuid()!=null || shop.getOwnerName()!=null)) {
+                        shop.setOwnerUuid(null);
+                        shop.setOwnerName(null);
+                        psHook.upsertShop(shop);
+                    } else if (renterUuid!=null && 
+                                ((shop.getOwnerUuid()!=null || shop.getOwnerName()==null) || !shop.getOwnerUuid().equals(renterUuid) || !shop.getOwnerName().equals(stall.getRenterName()))
+                                ) {
                         shop.setOwnerUuid(renterUuid);
                         shop.setOwnerName(stall.getRenterName());
                         psHook.upsertShop(shop);
@@ -944,6 +950,11 @@ public class StallHandler {
             stall.setInitialPrice(initialInitial/factor);
 
             dao.update(stall);
+        }
+
+        for (Stall stall : stalls) {
+            if (stall == null) continue;
+            if (!stall.isRented()) StaticUtil.StallSignSetAvaliable(stall);
         }
     }
 }

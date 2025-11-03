@@ -35,6 +35,6 @@ public class PSHook {
     }
 
     public void upsertShop(Shop shop) {
-        pl.getShopHandler().upsertShopObject(null);
+        pl.getShopHandler().upsertShopObject(shop);
     }
 }

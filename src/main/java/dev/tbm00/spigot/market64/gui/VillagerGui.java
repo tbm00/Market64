@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.ChatColor;
@@ -19,7 +18,7 @@ import dev.triumphteam.gui.guis.PaginatedGui;
 import dev.tbm00.papermc.playershops64.data.structure.Shop;
 import dev.tbm00.papermc.playershops64.gui.ShopManageGui;
 import dev.tbm00.papermc.playershops64.gui.ShopTransactionGui;
-
+import dev.tbm00.papermc.playershops64.utils.ShopUtils;
 import dev.tbm00.spigot.market64.Market64;
 import dev.tbm00.spigot.market64.StallHandler;
 import dev.tbm00.spigot.market64.StaticUtil;
@@ -67,7 +66,7 @@ public class VillagerGui {
      */
     private void fillShops() {
         for (Shop shop : stallHandler.getStallsShops(stall).values()) {
-            double buyPrice = shop.getBuyPrice().doubleValue(), sellPrice = shop.getSellPrice().doubleValue(),
+            Double buyPrice = shop.getBuyPrice()==null?null:shop.getBuyPrice().doubleValue(), sellPrice = shop.getSellPrice()==null?null:shop.getSellPrice().doubleValue(),
                     balance = shop.getMoneyStock().doubleValue();
             int stock = shop.getItemStock();
             boolean empty = false;
@@ -160,40 +159,29 @@ public class VillagerGui {
      * @param sender the player viewing the shop
      * @param isEmpty is the shop item empty
      */
-    public void addShopItemToGui(PaginatedGui gui, Shop shop, ItemStack item, ItemMeta meta, List<String> lore, double balance, double buyPrice, double sellPrice, int stock, boolean isEmpty, String name) {
+    public void addShopItemToGui(PaginatedGui gui, Shop shop, ItemStack item, ItemMeta meta, List<String> lore, double balance, Double buyPrice, Double sellPrice, int stock, boolean isEmpty, String name) {
         if (meta.getDisplayName()==null || meta.getDisplayName().isBlank())
-            name = StaticUtil.formatMaterial(item.getType()) + " &7x &f" + shop.getItemStack();
-        else name = meta.getDisplayName() + " &7x &f" + shop.getItemStack();
+            name = StaticUtil.formatMaterial(item.getType()) + " &7x &f" + shop.getStackSize();
+        else name = meta.getDisplayName() + " &7x &f" + shop.getStackSize();
         if (isEmpty) name = "&c(no item)";
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', name));
        
-        String priceLine = "";        
+        lore.clear();
+        lore = ShopUtils.formatSaleItemLoreText(shop, true);
         lore.add("&8-----------------------");
-        lore.add("&c" + shop.getDescription());
-        if (buyPrice>=0) priceLine = "&7B: &a$" + StaticUtil.formatInt(buyPrice) + " ";
-        if (sellPrice>=0) priceLine += "&7S: &c$" + StaticUtil.formatInt(sellPrice);
-        lore.add(priceLine);
-        if (shop.hasInfiniteStock()) lore.add("&7Stock: &e∞");
-            else lore.add("&7Stock: &e" + StaticUtil.formatInt(stock));
-        if (shop.hasInfiniteMoney()) lore.add("&7Balance: &e$&e∞");
-            else lore.add("&7Balance: &e$" + StaticUtil.formatInt(balance));
-        if (shop.getOwnerName()!=null) lore.add("&7Owner: &f" + shop.getOwnerName());
-        lore.add("&7"+shop.getLocation().getWorld().getName()+": &f"+(int)shop.getLocation().getX()+"&7, &f"
-                    +(int)shop.getLocation().getY()+"&7, &f"+(int)shop.getLocation().getZ());
-        lore.add("&8-----------------------");
-        if (player.getUniqueId().equals(shop.getOwnerUuid()) || shop.isAssistant(player.getUniqueId()))
+        if ((shop.getOwnerUuid()!=null && player.getUniqueId().equals(shop.getOwnerUuid())) || shop.isAssistant(player.getUniqueId()))
             lore.add("&6Click to manage to this shop");
         else lore.add("&6Click to open this shop");
         meta.setLore(lore.stream().map(l -> ChatColor.translateAlternateColorCodes('&', l)).toList());
 
-        meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
+        /*meta.addItemFlags(ItemFlag.HIDE_ADDITIONAL_TOOLTIP);
         meta.addItemFlags(ItemFlag.HIDE_ARMOR_TRIM);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.addItemFlags(ItemFlag.HIDE_DESTROYS);
         meta.addItemFlags(ItemFlag.HIDE_DYE);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         meta.addItemFlags(ItemFlag.HIDE_PLACED_ON);
-        meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
+        meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);*/
         //for (Enchantment enchant : new HashSet<>(meta.getEnchants().keySet()))
         //    meta.removeEnchant(enchant);
 
