@@ -124,9 +124,9 @@
         <dependency>
             <groupId>dev.tbm00</groupId>
             <artifactId>PlayerShops64</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/depend/PlayerShops64-1.0.0.jar</systemPath>
+            <systemPath>${project.basedir}/depend/PlayerShops64-1.0.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>dev.triumphteam</groupId>
